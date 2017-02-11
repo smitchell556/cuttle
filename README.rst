@@ -6,11 +6,25 @@ The simple, extendable ORM
 
 Cuttle is a small ORM that allows developers to create custom queries. It does
 not aim to do everything, but instead abstracts away much of the basic steps
-involved in database interactions.
+involved in database interactions. Read the docs at
+https://cuttle.readthedocs.io/en/latest/.
+
+Why is it called Cuttle?
+------------------------
+It's called Cuttle after the cuttlefish.
+
+Why make another ORM?
+---------------------
+This was initially a project I was given by my supervisor to upgrade me from
+"peon" to jr. software dev. I was given the OK to open source it and here we
+are.
 
 How do I install Cuttle?
 ------------------------
-Installation is as simple as ``pip install cuttle``.
+Install Cuttle with the command ``pip install --process-dependency-links
+--no-binary cuttle cuttle``. Cuttle relies on mysql-connector python which is
+not hosted on PyPi so these flags are necessary. The --no-binary flag requires a
+package as an argument so don't assume the occurance of cuttle twice is a typo.
 
 Is Cuttle usable?
 -----------------
