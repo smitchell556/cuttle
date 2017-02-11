@@ -75,4 +75,9 @@ more than welcome. Just hold tight while Cuttle finds it's identity.
 
 Where can I get help?
 ---------------------
-The mailing list is on it's way!
+If you're having trouble, check the
+`issue tracker <https://github.com/smitchell556/cuttle/issues>`_ to see if it's
+being worked on (or solved). The mailing list can be found
+`here <https://groups.google.com/forum/#!forum/cuttle>`_. If you have a question
+that you can't find the answer to, it may have already been asked there,
+otherwise please ask. Odds are somebody else has the same question to.
