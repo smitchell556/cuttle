@@ -1,0 +1,22 @@
+alabaster==0.7.9
+appdirs==1.4.0
+args==0.1.0
+Babel==2.3.4
+clint==0.5.1
+-e git+https://github.com/smitchell556/cuttle.git@afb125cdee763e670f4eea6a39544af885f9a1db#egg=cuttle
+docutils==0.13.1
+imagesize==0.7.1
+Jinja2==2.9.5
+MarkupSafe==0.23
+mysql-connector-python==2.1.5
+packaging==16.8
+pkginfo==1.4.1
+Pygments==2.2.0
+pyparsing==2.1.10
+pytz==2016.10
+requests==2.13.0
+requests-toolbelt==0.7.0
+six==1.10.0
+snowballstemmer==1.2.1
+Sphinx==1.5.2
+twine==1.8.1
