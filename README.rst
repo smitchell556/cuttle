@@ -7,7 +7,7 @@ The simple, extendable ORM
 Cuttle is a small ORM that allows developers to create custom queries. It does
 not aim to do everything, but instead abstracts away much of the basic steps
 involved in database interactions. Read the docs at
-https://cuttle.readthedocs.io/en/latest/.
+https://cuttle.readthedocs.io.
 
 Why is it called Cuttle?
 ------------------------

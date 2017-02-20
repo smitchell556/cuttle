@@ -1,7 +1,7 @@
 import codecs
 import os
 import re
-from setuptools import setup
+from setuptools import find_packages, setup
 
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -31,7 +31,7 @@ setup(name='cuttle',
           'Programming Language :: Python :: 2.7',
       ],
       keywords='sql mysql orm',
-      packages=['cuttle'],
+      packages=find_packages(),
       include_package_data=True,
       dependency_links=['https://dev.mysql.com/get/Downloads/Connector-Python/mysql-connector-python-2.1.5.zip'],
       install_requires=['mysql-connector-python'],
