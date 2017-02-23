@@ -15,26 +15,28 @@ class Cuttle(object):
     as a variable from another module/file that is not tracked by your
     repository if you do not want to hardcode the db credentials.
 
-    :param str config: Sets configuration for Cuttle to connect to database.
-                       expected in the form:
-                       ``"<sql_type>|<database>|<host>|<user>|<password>"``
+    :param str sql_type: Determines what sql implementation to use (MySQL,
+                         SQLite, etc).
+    :param str db: The database to be used.
+    :param str host: The host to be used. Defaults to None.
+    :param str user: The user of the database to login under. Defaults to None.
+    :param str passwd: The passwd for the user of the database. Defaults to
+                       None.
 
     :example: Instantiating Cuttle is as simple as:
 
               >>> from cuttle.home import Cuttle
-              >>> db = Cuttle("mysql|test_db|localhost|spencer|my_passwd")
+              >>> db = Cuttle('mysql', 'test_db', 'localhost', 'squirtle', 'my_passwd')
     """
 
-    def __init__(self, config):
+    def __init__(self, sql_type, db,
+                 host=None, user=None, passwd=None):
         #: Holds Model class.
         self.Model = model.Model
-        self.Model._configure_model(config)
+        self.Model._configure_model(sql_type, db, host, user, passwd)
 
     def create_db(self):
         """
         Creates database.
-
-        :note: In order for Cuttle to create the database you want, subclasses
-               of Model must be made otherwise the database will be empty.
         """
         self.Model._create_db()

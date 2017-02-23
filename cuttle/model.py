@@ -5,7 +5,7 @@ This module contains the Model class which is used to make querys on the
 database.
 
 """
-import _sql_methods._mysql_methods
+import _mysql_methods
 
 
 class Model(object):
@@ -18,13 +18,13 @@ class Model(object):
     :example: Model is used as a subclass like so:
 
               >>> from cuttle.home import Cuttle
-              >>> db = Cuttle('mysql|test_db|localhost|spencer|test_pw')
+              >>> db = Cuttle('mysql', 'test_db', 'localhost', 'squirtle', 'test_pw')
               >>> ExampleTable(db.Model):
               ...     columns = [IntField(name='example_column', serial=True),
               ...               TextField(name='example_text')]
 
-              The `ExampleTable` can now be used for making queries (assuming the
-              database has been created manually or with
+              The `ExampleTable` can now be used for making queries (assuming
+              the database has been created manually or with
               :func:`~cuttle.home.Cuttle.create_db`).
 
     :note: Model should not be instantiated. Treat it like an abstract base
@@ -46,21 +46,14 @@ class Model(object):
         self.close()
 
     @classmethod
-    def _configure_model(cls, config):
+    def _configure_model(cls, sql_type, db, host, user, passwd):
         """Configures the Model class to connect to the database."""
-        config = config.split('|')
-
-        if len(config) != 5:
-            msg = ("Cuttle requires a string containing 5 values seperated by "
-                   "\"|\".")
-            raise ValueError(msg)
-
-        if config[0] == 'mysql':
-            cls._config['SQL_METHODS'] = _sql_methods._mysql_methods
-            cls._config['DB'] = config[1]
-            cls._config['HOST'] = config[2]
-            cls._config['USER'] = config[3]
-            cls._config['PASSWD'] = config[4]
+        if sql_type.lower() == 'mysql':
+            cls._config['SQL_METHODS'] = _mysql_methods
+            cls._config['DB'] = db
+            cls._config['HOST'] = host
+            cls._config['USER'] = user
+            cls._config['PASSWD'] = passwd
         else:
             msg = "Please choose a valid sql extension"
             raise ValueError(msg)
@@ -162,7 +155,6 @@ class Model(object):
                        'connected.'.format(type(self).__name__))
             raise RuntimeError(err_msg)
         self._con = self._sql_m()._make_con(self._get_config())
-
 
     def close(self):
         """
