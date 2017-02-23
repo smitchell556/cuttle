@@ -11,6 +11,7 @@ Minor release, unreleased
 
 - Change parameters accepted by Cuttle object from one long configuration string
   to multiple parameters.
+- Column names input to query methods can be checked for validity.
 
 Version 0.2.1
 -------------
