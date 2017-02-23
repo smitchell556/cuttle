@@ -38,6 +38,9 @@ class Model(object):
             err_msg = 'Do not make an instance of Model, make a subclass.'
             raise TypeError(err_msg)
 
+    def __del__(self):
+        self.close()
+
     def __enter__(self):
         self.connect()
         return self
@@ -168,11 +171,12 @@ class Model(object):
 
     def cursor(self, **kwargs):
         """
-        Creates a cursor.
+        Returns a cursor. Requires instance to be connected to the database
+        first.
 
         :param \**kwargs: Type(s) of cursor to use as boolean values.
 
-        :note: Requires instance to be connected to the database first.
+        :note: It is the caller's responsibility to close the cursor.
         """
         if kwargs:
             return self.connection.cursor(**kwargs)
