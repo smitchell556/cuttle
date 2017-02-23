@@ -6,7 +6,7 @@ This module contains database methods for performing queries in MySQL.
 """
 import mysql.connector
 
-from cuttle._sql_methods import _db_helpers
+import _db_helpers
 
 
 def _create_db(cls):
@@ -31,6 +31,7 @@ def _create_db(cls):
         pass
     cur.close()
     con.close()
+
 
 def _generate_table_schema(db, tbl_classes):
     """
@@ -67,12 +68,13 @@ def _generate_table_schema(db, tbl_classes):
 
     return create_tbls
 
+
 def _generate_column_schema(column):
     """
     Generates column schema.
     """
     attr = column.attributes
-    
+
     create_col = [
         attr['name'].lower()
     ]
@@ -83,7 +85,7 @@ def _generate_column_schema(column):
             attr['data_type'],
             attr['maximum']))
     elif attr['precision'] is not None:
-        create_col.append( '{}{}'.format(
+        create_col.append('{}{}'.format(
             attr['data_type'],
             attr['precision']))
     else:
@@ -104,6 +106,7 @@ def _generate_column_schema(column):
 
     return create_col
 
+
 def _make_con(db_config):
     """
     Creates connection to db.
@@ -112,6 +115,7 @@ def _make_con(db_config):
                                    user=db_config['USER'],
                                    passwd=db_config['PASSWD'],
                                    db=db_config['DB'])
+
 
 def _select(model, *args, **kwargs):
     """
@@ -150,6 +154,7 @@ def _select(model, *args, **kwargs):
 
     return r
 
+
 def _insert(model, columns, values):
     """
     Performs INSERT query.
@@ -157,16 +162,16 @@ def _insert(model, columns, values):
     cur = None
 
     q = ['INSERT INTO {}'.format(model.name)]
-    
+
     c = '({})'.format(', '.join(columns))
     q.append(c)
-    
+
     q.append('VALUES')
-    
+
     holder = '({})'.format(
         ', '.join(['%s' for __ in range(len(values[0]))]))
     q.append(holder)
-    
+
     q = ' '.join(q)
 
     try:
@@ -178,6 +183,7 @@ def _insert(model, columns, values):
     finally:
         if cur is not None:
             cur.close()
+
 
 def _update(model, new_values, where):
     """
@@ -217,6 +223,7 @@ def _update(model, new_values, where):
         if cur is not None:
             cur.close()
 
+
 def _delete(model, **kwargs):
     """
     Performs a DELETE query.
@@ -235,7 +242,7 @@ def _delete(model, **kwargs):
                             for column in columns]))
 
     q = ' '.join(q)
-    
+
     try:
         cur = model.cursor()
         if kwargs:
