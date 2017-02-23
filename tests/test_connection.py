@@ -6,8 +6,6 @@ Tests that Model makes connection.
 """
 import pytest
 
-import _helpers
-
 
 def test_explicit_connect(db_and_model):
     db, t_class = db_and_model
