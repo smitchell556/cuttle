@@ -149,12 +149,12 @@ class Model(object):
                ``connect()`` method must be explicitly called before
                performing any queries.
         """
-        if self.con is not None:
-            err_msg = ('{} instance already connected. Do not connect a model '
-                       'instance to a database if it is already '
-                       'connected.'.format(type(self).__name__))
-            raise RuntimeError(err_msg)
-        self._con = self._sql_m()._make_con(self._get_config())
+        try:
+            self.close()
+        except:
+            pass
+        finally:
+            self._connection = self._sql_m()._make_con(self._get_config())
 
     def close(self):
         """
@@ -163,9 +163,12 @@ class Model(object):
         :note: If model is instantiated outside of a with block, the ``close()``
                method must be explicitly called.
         """
-        if self.con is not None:
-            self.con.close()
-            self._con = None
+        try:
+            self.connection.close()
+        except:
+            pass
+        finally:
+            self._connection = None
 
     def cursor(self, **kwargs):
         """
@@ -176,11 +179,11 @@ class Model(object):
         :note: Requires instance to be connected to the database first.
         """
         if kwargs:
-            return self.con.cursor(**kwargs)
+            return self.connection.cursor(**kwargs)
         try:
-            return self.con.cursor(**self._cursor_properties)
+            return self.connection.cursor(**self._cursor_properties)
         except:
-            return self.con.cursor()
+            return self.connection.cursor()
 
     def cursor_properties(self, **kwargs):
         """
@@ -198,16 +201,12 @@ class Model(object):
         return type(self).__name__.lower()
 
     @property
-    def con(self):
+    def connection(self):
         """
         Returns a connection to the database.
         """
         try:
-            return self._con
+            return self._connection
         except:
-            self._con = None
-        return self._con
-
-    @con.setter
-    def con(self, v):
-        raise AttributeError('con property cannot be set')
+            self._connection = None
+        return self._connection

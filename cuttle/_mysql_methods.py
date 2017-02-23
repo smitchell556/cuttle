@@ -177,7 +177,7 @@ def _insert(model, columns, values):
     try:
         cur = model.cursor()
         cur.executemany(q, values)
-        model.con.commit()
+        model.connection.commit()
     except:
         raise
     finally:
@@ -216,7 +216,7 @@ def _update(model, new_values, where):
     try:
         cur = model.cursor()
         cur.execute(q, tuple(values))
-        model.con.commit()
+        model.connection.commit()
     except:
         raise
     finally:
@@ -249,7 +249,7 @@ def _delete(model, **kwargs):
             cur.execute(q, tuple(values))
         else:
             cur.execute(q)
-        model.con.commit()
+        model.connection.commit()
     except:
         raise
     finally:
