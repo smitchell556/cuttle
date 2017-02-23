@@ -149,12 +149,8 @@ class Model(object):
                ``connect()`` method must be explicitly called before
                performing any queries.
         """
-        try:
-            self.close()
-        except:
-            pass
-        finally:
-            self._connection = self._sql_m()._make_con(self._get_config())
+        self.close()
+        self._connection = self._sql_m()._make_con(self._get_config())
 
     def close(self):
         """
