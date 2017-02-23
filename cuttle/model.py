@@ -198,7 +198,7 @@ class Model(object):
         Ensures columns exist on model before creating query string. Failing to
         check columns can result in sql injection.
 
-        :param \*args: Model columns.
+        :param \*args: Columns to be checked against model.
         """
         column_names = set(col.attributes['name']
                            for col in self._get_columns())
