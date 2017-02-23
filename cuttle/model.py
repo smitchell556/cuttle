@@ -193,6 +193,18 @@ class Model(object):
         """
         self._cursor_properties = kwargs
 
+    def check_columns(self, *args):
+        """
+        Ensures columns exist on model before creating query string. Failing to
+        check columns can result in sql injection.
+
+        :param \*args: Model columns.
+        """
+        column_names = set(col.attributes['name']
+                           for col in self._get_columns())
+
+        return set(args).issubset(column_names)
+
     @property
     def name(self):
         """
