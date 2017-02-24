@@ -4,7 +4,8 @@
 This module contains database methods for performing queries in MySQL.
 
 """
-import mysql.connector
+# import mysql.connector
+import pymysql.cursors
 
 import _db_helpers
 
@@ -22,13 +23,12 @@ def _create_db(cls):
     create_db = 'CREATE DATABASE IF NOT EXISTS {}'.format(db_config['DB'])
     create_tbls = _generate_table_schema(db_config['DB'], tbl_classes)
 
-    con = mysql.connector.connect(host=db_config['HOST'],
-                                  user=db_config['USER'],
-                                  passwd=db_config['PASSWD'])
+    con = pymysql.connect(host=db_config['HOST'],
+                          user=db_config['USER'],
+                          passwd=db_config['PASSWD'])
     cur = con.cursor()
     cur.execute(create_db)
-    for stmt in cur.execute(create_tbls, multi=True):
-        pass
+    cur.execute(create_tbls)
     cur.close()
     con.close()
 
@@ -111,10 +111,10 @@ def _make_con(db_config):
     """
     Creates connection to db.
     """
-    return mysql.connector.connect(host=db_config['HOST'],
-                                   user=db_config['USER'],
-                                   passwd=db_config['PASSWD'],
-                                   db=db_config['DB'])
+    return pymysql.connect(host=db_config['HOST'],
+                           user=db_config['USER'],
+                           passwd=db_config['PASSWD'],
+                           db=db_config['DB'])
 
 
 def _select(model, *args, **kwargs):

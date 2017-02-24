@@ -12,8 +12,8 @@ import _helpers
 def test_mysql_select(db_and_model, mysql_config):
     db, t_class = db_and_model
 
-    exp_select = [(7, 'Goku')]
-    exp_select_all = [(1, 'Vegeta'), (7, 'Goku')]
+    exp_select = ((7, 'Goku'),)
+    exp_select_all = ((1, 'Vegeta'), (7, 'Goku'))
 
     db.create_db()
     t_obj = t_class()

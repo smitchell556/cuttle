@@ -9,9 +9,10 @@ Version 0.3.0
 
 Minor release, unreleased
 
-- Change parameters accepted by Cuttle object from one long configuration string
+- Changed parameters accepted by Cuttle object from one long configuration string
   to multiple parameters.
 - Column names input to query methods can be checked for validity.
+- Switched from mysql-connector-python to PyMySQL.
 
 Version 0.2.1
 -------------

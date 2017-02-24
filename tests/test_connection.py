@@ -4,6 +4,7 @@
 Tests that Model makes connection.
 
 """
+import pymysql
 import pytest
 
 
@@ -13,7 +14,7 @@ def test_explicit_connect(db_and_model):
 
     t_obj = t_class()
     t_obj.connect()
-    assert t_obj.connection.is_connected()
+    assert type(t_obj.connection) == pymysql.connections.Connection
 
     t_obj.close()
     assert t_obj.connection is None
@@ -24,4 +25,4 @@ def test_with_connect(db_and_model):
     db.create_db()
 
     with t_class() as t_obj:
-        assert t_obj.connection.is_connected()
+        assert type(t_obj.connection) == pymysql.connections.Connection

@@ -21,10 +21,7 @@ are.
 
 How do I install Cuttle?
 ------------------------
-Install Cuttle with the command ``pip install --process-dependency-links
---no-binary cuttle cuttle``. Cuttle relies on mysql-connector python which is
-not hosted on PyPi so these flags are necessary. The --no-binary flag requires a
-package as an argument so don't assume the occurance of cuttle twice is a typo.
+Install Cuttle with the command ``pip install cuttle``.
 
 Is Cuttle usable?
 -----------------
