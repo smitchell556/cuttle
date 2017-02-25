@@ -117,51 +117,24 @@ def _make_con(db_config):
                            db=db_config['DB'])
 
 
-def _select(model, *args, **kwargs):
+def _select(name, *args):
     """
-    Performs SELECT query.
+    Generates SELECT statement.
     """
-    cur = None
-
     q = ['SELECT']
     if args:
         q.append(', '.join([c for c in args]))
     else:
         q.append('*')
-    q.append('FROM {}'.format(model.name))
-
-    if kwargs:
-        q.append('WHERE')
-        values = []
-        for key, value in kwargs.iteritems():
-            q.append('{}=%s'.format(key))
-            values.append(value)
-
-    q = ' '.join(q)
-
-    try:
-        cur = model.cursor()
-        if kwargs:
-            cur.execute(q, tuple(values))
-        else:
-            cur.execute(q)
-        r = cur.fetchall()
-    except:
-        raise
-    finally:
-        if cur is not None:
-            cur.close()
-
-    return r
+    q.append('FROM {}'.format(name))
+    return ' '.join(q)
 
 
-def _insert(model, columns, values):
+def _insert(name, columns, values):
     """
     Performs INSERT query.
     """
-    cur = None
-
-    q = ['INSERT INTO {}'.format(model.name)]
+    q = ['INSERT INTO {}'.format(name)]
 
     c = '({})'.format(', '.join(columns))
     q.append(c)
@@ -171,87 +144,25 @@ def _insert(model, columns, values):
     holder = '({})'.format(
         ', '.join(['%s' for __ in range(len(values[0]))]))
     q.append(holder)
-
-    q = ' '.join(q)
-
-    try:
-        cur = model.cursor()
-        cur.executemany(q, values)
-        model.connection.commit()
-    except:
-        raise
-    finally:
-        if cur is not None:
-            cur.close()
+    return ' '.join(q), values
 
 
-def _update(model, new_values, where):
+def _update(name, **kwargs):
     """
     Performs UPDATE query.
     """
-    cur = None
-    columns, values = [], []
-    for key, value in new_values.iteritems():
-        columns.append(key)
-        values.append(value)
-
-    q = ['UPDATE {} SET'.format(model.name)]
-    q.append(', '.join(['{}=%s'.format(column) for column in columns]))
-
-    if where is not None:
-        where_columns, where_values = [], []
-
-        for key, value in where.iteritems():
-            where_columns.append(key)
-            where_values.append(value)
-
-        q.append('WHERE')
-        q.append(', '.join(['{}=%s'.format(column)
-                            for column in where_columns]))
-
-        values.extend(where_values)
-
-    q = ' '.join(q)
-
-    try:
-        cur = model.cursor()
-        cur.execute(q, tuple(values))
-        model.connection.commit()
-    except:
-        raise
-    finally:
-        if cur is not None:
-            cur.close()
-
-
-def _delete(model, **kwargs):
-    """
-    Performs a DELETE query.
-    """
-    cur = None
     columns, values = [], []
     for key, value in kwargs.iteritems():
         columns.append(key)
         values.append(value)
 
-    q = ['DELETE FROM {}'.format(model.name)]
+    q = ['UPDATE {} SET'.format(name)]
+    q.append(', '.join(['{}=%s'.format(column) for column in columns]))
+    return ' '.join(q), tuple(values)
 
-    if kwargs:
-        q.append('WHERE')
-        q.append(', '.join(['{}=%s'.format(column)
-                            for column in columns]))
 
-    q = ' '.join(q)
-
-    try:
-        cur = model.cursor()
-        if kwargs:
-            cur.execute(q, tuple(values))
-        else:
-            cur.execute(q)
-        model.connection.commit()
-    except:
-        raise
-    finally:
-        if cur is not None:
-            cur.close()
+def _delete(name):
+    """
+    Performs a DELETE query.
+    """
+    return 'DELETE FROM {}'.format(name)

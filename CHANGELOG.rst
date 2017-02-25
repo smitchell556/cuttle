@@ -13,6 +13,9 @@ Minor release, unreleased
   to multiple parameters.
 - Column names input to query methods can be checked for validity.
 - Switched from mysql-connector-python to PyMySQL.
+- Query methods generate strings instead of performing a query.
+- :func:`~cuttle.model.Model.where` must be called explicitly to add WHERE
+  clause.
 
 Version 0.2.1
 -------------

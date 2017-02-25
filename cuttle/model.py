@@ -37,6 +37,8 @@ class Model(object):
         if self.__class__.__name__ == 'Model':
             err_msg = 'Do not make an instance of Model, make a subclass.'
             raise TypeError(err_msg)
+        self.query = []
+        self.values = []
 
     def __del__(self):
         self.close()
@@ -89,22 +91,19 @@ class Model(object):
         """
         cls._sql_m()._create_db(cls)
 
-    def select(self, *args, **kwargs):
+    def select(self, *args):
         """
         Performs a SELECT query on the table associated with the model. If no
         arguments are supplied, all rows will be returned.
 
         :param \*args: Columns to select for as strings. If no columns provided,
                        all columns will be selected.
-        :param \**kwargs: Key value pairs used in the WHERE clause of the select
-                          statement.
 
         :return: A list of tuples where each tuple is a row in the table.
-
-        :note: All kwarg pairs will be checked for *equality* in the WHERE
-               clause.
         """
-        return self._sql_m()._select(self, *args, **kwargs)
+        self.check_columns(*args)
+        self.query.append(self._sql_m()._select(self.name, *args))
+        return self
 
     def insert(self, columns, values):
         """
@@ -118,31 +117,34 @@ class Model(object):
         :note: If values are not ordered in the same sequence as columns, they
                wont be in the proper column in the database.
         """
-        self._sql_m()._insert(self, columns, values)
+        self.check_columns(*tuple(columns))
+        q, vals = self._sql_m()._insert(self.name, columns, values)
+        self.query.append(q)
+        self.values.extend(vals)
+        return self
 
-    def update(self, new_values, where=None):
+    def update(self, **kwargs):
         """
         Performs an UPDATE query on the table associated with the model.
 
-        :param dict new_values: The values to be updated in the table where the
-                                key is the column.
-        :param dict where: Condition for which rows are updated.
+        :param dict \**kwargs: The values to be updated in the table where the
+                               key is the column.
 
         :note: All key value pairs will be checked for *equality* in the WHERE
                clause.
         """
-        self._sql_m()._update(self, new_values, where)
+        self.check_columns(*tuple(key for key in kwargs.keys()))
+        q, vals = self._sql_m()._update(self.name, **kwargs)
+        self.query.append(q)
+        self.values.append(vals)
+        return self
 
-    def delete(self, **kwargs):
+    def delete(self):
         """
         Performs a DELETE query on the table associated with the model.
-
-        :param \**kwargs: Key value pairs used in the WHERE clause of the select
-                          statement.
-        :note: All key value pairs will be checked for *equality* in the WHERE
-               clause.
         """
-        self._sql_m()._delete(self, **kwargs)
+        self.query.append(self._sql_m()._delete(self.name))
+        return self
 
     def connect(self):
         """
@@ -193,17 +195,31 @@ class Model(object):
         """
         self._cursor_properties = kwargs
 
+    def reset_query(self):
+        """
+        Resets query and values property on model.
+        """
+        self.query = []
+        self.values = []
+
     def check_columns(self, *args):
         """
         Ensures columns exist on model before creating query string. Failing to
         check columns can result in sql injection.
 
         :param \*args: Columns to be checked against model.
+
+        :raises ValueError: If parameters are not columns on model.
         """
         column_names = set(col.attributes['name']
                            for col in self._get_columns())
+        input_columns = set(args)
 
-        return set(args).issubset(column_names)
+        if not input_columns.issubset(column_names):
+            miss_cols = ', '.join(list(input_columns - column_names))
+            msg = ('Columns {} were not found on the Model. Be wary of SQL '
+                   'injection.').format(miss_cols)
+            raise ValueError(msg)
 
     @property
     def name(self):
