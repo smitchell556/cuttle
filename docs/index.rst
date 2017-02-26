@@ -19,6 +19,13 @@ understanding Cuttle. There's not much to it so let's get started.
    tutorial      
    api
 
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+
 .. dependencies
    To learn more about what makes Cuttle tick, check out the database connectors
    Cuttle uses
