@@ -12,7 +12,7 @@ def test_check_columns(db_and_model):
 
     t_obj = t_class()
 
-    assert t_obj.check_columns('test_int_col') is None
+    assert t_obj.check_columns('test_int_col')
 
     with pytest.raises(ValueError):
         t_obj.check_columns('test_int_col', 'test_wrong_col')

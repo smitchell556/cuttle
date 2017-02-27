@@ -132,7 +132,7 @@ def _select(name, *args):
 
 def _insert(name, columns, values):
     """
-    Performs INSERT query.
+    Generates INSERT statement.
     """
     q = ['INSERT INTO {}'.format(name)]
 
@@ -149,7 +149,7 @@ def _insert(name, columns, values):
 
 def _update(name, **kwargs):
     """
-    Performs UPDATE query.
+    Generates UPDATE statement.
     """
     columns, values = [], []
     for key, value in kwargs.iteritems():
@@ -158,11 +158,25 @@ def _update(name, **kwargs):
 
     q = ['UPDATE {} SET'.format(name)]
     q.append(', '.join(['{}=%s'.format(column) for column in columns]))
-    return ' '.join(q), tuple(values)
+    return ' '.join(q), values
 
 
 def _delete(name):
     """
-    Performs a DELETE query.
+    Generates DELETE statement.
     """
     return 'DELETE FROM {}'.format(name)
+
+
+def _where(name, **kwargs):
+    """
+    Generates WHERE statement.
+    """
+    columns, values = [], []
+    for key, value in kwargs.iteritems():
+        columns.append(key)
+        values.append(value)
+
+    q = ['WHERE']
+    q.append(' AND '.join(['{}=%s'.format(column) for column in columns]))
+    return ' '.join(q), values

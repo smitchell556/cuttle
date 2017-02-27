@@ -5,6 +5,8 @@ This module contains the Model class which is used to make querys on the
 database.
 
 """
+import warnings
+
 import _mysql_methods
 
 
@@ -12,6 +14,17 @@ class Model(object):
     """
     Model represents a table. It is used for querying the database. It is meant
     to be subclassed to create tables.
+
+    :param bool validate_columns: Requires a validation check on all query
+                                  methods that pass columns as parameters. If 
+                                  raise_error_on_validation is false, no error
+                                  will be raised, but the query method will not
+                                  modify ``query`` or ``values`` on the object.
+                                  Defaults to ``True``.
+    :param bool raise_error_on_validation: Requires that an error is raised when
+                                           a column fails validation. Defaults
+                                           to ``True``. If validate_columns is
+                                           false, no error will be raised.
 
     :raises TypeError: Error caused by instantiating Model.
 
@@ -33,12 +46,18 @@ class Model(object):
     #: Holds configuration values for database.
     _config = {}
 
-    def __init__(self):
+    def __init__(self, validate_columns=True, raise_error_on_validation=True):
         if self.__class__.__name__ == 'Model':
             err_msg = 'Do not make an instance of Model, make a subclass.'
             raise TypeError(err_msg)
+        #: Holds query to be executed as a list of strings.
         self.query = []
+        #: Holds values to be inserted into query when executed. Holds a list of
+        #: tuples. If more than one tuple is contained, executemany() will be
+        #: called.
         self.values = []
+        self.validate_columns = validate_columns
+        self.raise_error_on_validation = raise_error_on_validation
 
     def __del__(self):
         self.close()
@@ -93,58 +112,81 @@ class Model(object):
 
     def select(self, *args):
         """
-        Performs a SELECT query on the table associated with the model. If no
+        Adds a SELECT query on the table associated with the model. If no
         arguments are supplied, all rows will be returned.
 
         :param \*args: Columns to select for as strings. If no columns provided,
                        all columns will be selected.
-
-        :return: A list of tuples where each tuple is a row in the table.
         """
-        self.check_columns(*args)
-        self.query.append(self._sql_m()._select(self.name, *args))
+        if self.check_columns(*args):
+            self.query.append(self._sql_m()._select(self.name, *args))
         return self
 
     def insert(self, columns, values):
         """
-        Performs an INSERT query on the table associated with the model.
+        Adds an INSERT query on the table associated with the model.
 
         :param list columns: The columns to insert values into.
         :param list values: Values to be inserted into the table. They must be
                             in the same order as the columns. Expects a list
-                            of tuples
+                            of tuples.
 
         :note: If values are not ordered in the same sequence as columns, they
                wont be in the proper column in the database.
         """
-        self.check_columns(*tuple(columns))
-        q, vals = self._sql_m()._insert(self.name, columns, values)
-        self.query.append(q)
-        self.values.extend(vals)
+        values = [tuple(value) for value in values]
+        if self.check_columns(*tuple(columns)):
+            q, vals = self._sql_m()._insert(self.name, columns, values)
+            self.query.append(q)
+            self.values.extend(vals)
         return self
 
     def update(self, **kwargs):
         """
-        Performs an UPDATE query on the table associated with the model.
+        Adds an UPDATE query on the table associated with the model.
 
         :param dict \**kwargs: The values to be updated in the table where the
                                key is the column.
 
-        :note: All key value pairs will be checked for *equality* in the WHERE
-               clause.
         """
-        self.check_columns(*tuple(key for key in kwargs.keys()))
-        q, vals = self._sql_m()._update(self.name, **kwargs)
-        self.query.append(q)
-        self.values.append(vals)
+        if self.check_columns(*tuple(key for key in kwargs.keys())):
+            q, vals = self._sql_m()._update(self.name, **kwargs)
+            self.query.append(q)
+            self.values.append(vals)
         return self
 
     def delete(self):
         """
-        Performs a DELETE query on the table associated with the model.
+        Adds a DELETE query on the table associated with the model.
         """
         self.query.append(self._sql_m()._delete(self.name))
         return self
+
+    def where(self, **kwargs):
+        """
+        Adds a WHERE clause to the query. The WHERE clause checks for equality.
+
+        :param \**kwargs: Key value pairs where the keys are the columns of the
+                          table.
+        """
+        if self.check_columns(*tuple(key for key in kwargs.keys())):
+            q, vals = self._sql_m()._where(self.name, **kwargs)
+            self.query.append(q)
+            if len(self.values) == 1:
+                self.values[0].extend(vals)
+            else:
+                self.values.append(vals)
+        return self
+
+    def _generate_statement(self):
+        """
+        Prepares query and values instance variables for execution.
+        """
+        if len(self.values) == 1:
+            vals = tuple(self.values[0])
+        else:
+            vals = self.values
+        return ' '.join(self.query), vals
 
     def connect(self):
         """
@@ -213,13 +255,17 @@ class Model(object):
         """
         column_names = set(col.attributes['name']
                            for col in self._get_columns())
-        input_columns = set(args)
+        failed_columns = set(args) - column_names
 
-        if not input_columns.issubset(column_names):
-            miss_cols = ', '.join(list(input_columns - column_names))
+        if self.validate_columns and failed_columns:
             msg = ('Columns {} were not found on the Model. Be wary of SQL '
-                   'injection.').format(miss_cols)
-            raise ValueError(msg)
+                   'injection.').format(failed_columns)
+            if self.raise_error_on_validation:
+                raise ValueError(msg)
+            else:
+                warnings.warn(msg)
+                return False
+        return True
 
     @property
     def name(self):
