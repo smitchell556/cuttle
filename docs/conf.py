@@ -18,15 +18,8 @@
 #
 import os
 import sys
-from mock import Mock as MagicMock
 
-class Mock(MagicMock):
-    @classmethod
-    def __getattr__(cls, name):
-        return MagicMock()
-
-MOCK_MODULES = ['mysql-connector-python']
-sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+import sphinx_rtd_theme
 
 sys.path.insert(0, os.path.abspath('../'))
 
@@ -100,7 +93,8 @@ todo_include_todos = False
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+html_theme = 'sphinx_rtd_theme'
+html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
