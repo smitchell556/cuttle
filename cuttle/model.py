@@ -116,6 +116,8 @@ class Model(object):
         :param \*args: Columns to select for as strings. If no columns provided,
                        all columns will be selected.
         """
+        if args:
+            args = self.columns_lower(*args)
         if self.check_columns(*args):
             self.append_query(self._sql_m()._select(self.name, *args))
         return self
@@ -131,7 +133,8 @@ class Model(object):
         :note: If values are not ordered in the same sequence as columns, they
                wont be in the proper column in the database.
         """
-        if self.check_columns(*tuple(columns)):
+        columns = self.columns_lower(*tuple(columns))
+        if self.check_columns(*columns):
             q, vals = self._sql_m()._insert(self.name, columns, values)
             self.append_query(q)
             self.extend_values(vals)
@@ -145,6 +148,7 @@ class Model(object):
                                key is the column.
 
         """
+        kwargs = self.columns_lower(**kwargs)
         if self.check_columns(*tuple(key for key in kwargs.keys())):
             q, vals = self._sql_m()._update(self.name, **kwargs)
             self.append_query(q)
@@ -165,11 +169,23 @@ class Model(object):
         :param \**kwargs: Key value pairs where the keys are the columns of the
                           table.
         """
+        kwargs = self.columns_lower(**kwargs)
         if self.check_columns(*tuple(key for key in kwargs.keys())):
             q, vals = self._sql_m()._where(self.name, **kwargs)
             self.append_query(q)
             self.extend_values(vals)
         return self
+
+    def execute_query(self):
+        """
+        Executes the query and returns the results (if any).
+
+        :returns: A tuple of tuples. Where each inner tuple represents a
+                  column.
+        """
+        result = self._sql_m()._execute_query(self)
+        self.reset_query()
+        return result
 
     def append_query(self, query):
         """
@@ -187,6 +203,25 @@ class Model(object):
         """
         self._values.extend(values)
 
+    def columns_lower(self, *args, **kwargs):
+        """
+        Converts columns to lowercase. Accepts both args and kwargs, but args
+        take precedence for conversion. If both are passed as arguments, only
+        converted args will be returned.
+
+        :param \*args: Column names.
+        :param \**kwargs: Pairs where the key is the column name.
+
+        :raises ValueError: If no argument(s) are passed to the function.
+        """
+        if args:
+            return tuple(arg.lower() for arg in args)
+        elif kwargs:
+            return {key.lower(): value for key, value in kwargs.iteritems()}
+        else:
+            raise ValueError("columns_lower must receive input of either args "
+                             "or kwargs")
+
     def check_columns(self, *args):
         """
         Ensures columns exist on model before creating query string. Failing to
@@ -196,9 +231,9 @@ class Model(object):
 
         :raises ValueError: If parameters are not columns on model.
         """
-        column_names = set(col.attributes['name']
+        column_names = set(col.attributes['name'].lower()
                            for col in self._get_columns())
-        failed_columns = set(args) - column_names
+        failed_columns = set(arg.lower() for arg in args) - column_names
 
         if self.validate_columns and failed_columns:
             msg = ('Columns {} were not found on the Model. Be wary of SQL '

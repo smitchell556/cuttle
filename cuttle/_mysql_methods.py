@@ -179,3 +179,15 @@ def _where(name, **kwargs):
     q = ['WHERE']
     q.append(' AND '.join(['{}=%s'.format(column) for column in columns]))
     return ' '.join(q), values
+
+
+def _execute_query(model):
+    """
+    Executes a query and returns the results (if any).
+    """
+    cursor = model.cursor()
+    cursor.execute(model.query, model.values)
+    result = cursor.fetchall()
+    model.connection.commit()
+    cursor.close()
+    return result
