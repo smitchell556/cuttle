@@ -7,8 +7,6 @@ Here are the changes made to Cuttle for each release.
 Version 0.3.0
 -------------
 
-Minor release, unreleased
-
 - Changed parameters accepted by Cuttle object from one long configuration string
   to multiple parameters.
 - Column names input to query methods can be checked for validity.
