@@ -34,7 +34,7 @@ class Model(object):
               >>> db = Cuttle('mysql', 'test_db', 'localhost', 'squirtle', 'test_pw')
               >>> ExampleTable(db.Model):
               ...     columns = [IntField(name='example_column', serial=True),
-              ...               TextField(name='example_text')]
+              ...                TextField(name='example_text')]
 
               The `ExampleTable` can now be used for making queries (assuming
               the database has been created manually or with
@@ -328,4 +328,7 @@ class Model(object):
 
     @property
     def values(self):
+        """
+        Returns the values as a tuple.
+        """
         return tuple(self._values)

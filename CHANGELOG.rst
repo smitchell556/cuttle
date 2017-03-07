@@ -15,7 +15,12 @@ Minor release, unreleased
 - Switched from mysql-connector-python to PyMySQL.
 - Query methods generate strings instead of performing a query.
 - :func:`~cuttle.model.Model.where` must be called explicitly to add WHERE
-  clause.
+  clause on Model subclass objects.
+- :func:`~cuttle.model.Model.execute_query` executes the generated query and returns
+  the results, if any from Model subclass objects.
+- Basic helper functions :func:`~cuttle.model.Model.append_query`,
+  :func:`~cuttle.model.Model.extend_values`, and :func:`~cuttle.model.Model.columns_lower`
+  for manipulating query strings, values, and column name inputs.
 
 Version 0.2.1
 -------------

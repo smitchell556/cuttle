@@ -15,9 +15,12 @@ It's called Cuttle after the cuttlefish.
 
 Why make another ORM?
 ---------------------
-This was initially a project I was given by my supervisor to upgrade me from
-"peon" to jr. software dev. I was given the OK to open source it and here we
-are.
+This project started as a way to make database interactions as simple and easy
+as possible. As work began, it became apparent that requirements for being easy
+to use and flexible enough to handle unknown needs were at odds with each other.
+This lead to the design of encouraging custom query statement creation methods
+with Cuttle providing the infrastructure for making and executing custom methods
+as easy as possible.
 
 How do I install Cuttle?
 ------------------------
