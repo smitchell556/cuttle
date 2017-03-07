@@ -138,11 +138,10 @@ def _insert(name, columns, values):
 
     c = '({})'.format(', '.join(columns))
     q.append(c)
-
     q.append('VALUES')
 
     holder = '({})'.format(
-        ', '.join(['%s' for __ in range(len(values[0]))]))
+        ', '.join(['%s' for __ in range(len(values))]))
     q.append(holder)
     return ' '.join(q), values
 

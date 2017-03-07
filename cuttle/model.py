@@ -51,11 +51,9 @@ class Model(object):
             err_msg = 'Do not make an instance of Model, make a subclass.'
             raise TypeError(err_msg)
         #: Holds query to be executed as a list of strings.
-        self.query = []
-        #: Holds values to be inserted into query when executed. Holds a list of
-        #: tuples. If more than one tuple is contained, executemany() will be
-        #: called.
-        self.values = []
+        self._query = []
+        #: Holds values to be inserted into query when executed.
+        self._values = []
         self.validate_columns = validate_columns
         self.raise_error_on_validation = raise_error_on_validation
 
@@ -119,7 +117,7 @@ class Model(object):
                        all columns will be selected.
         """
         if self.check_columns(*args):
-            self.query.append(self._sql_m()._select(self.name, *args))
+            self.append_query(self._sql_m()._select(self.name, *args))
         return self
 
     def insert(self, columns, values):
@@ -128,17 +126,15 @@ class Model(object):
 
         :param list columns: The columns to insert values into.
         :param list values: Values to be inserted into the table. They must be
-                            in the same order as the columns. Expects a list
-                            of tuples.
+                            in the same order as the columns. Expects a list.
 
         :note: If values are not ordered in the same sequence as columns, they
                wont be in the proper column in the database.
         """
-        values = [tuple(value) for value in values]
         if self.check_columns(*tuple(columns)):
             q, vals = self._sql_m()._insert(self.name, columns, values)
-            self.query.append(q)
-            self.values.extend(vals)
+            self.append_query(q)
+            self.extend_values(vals)
         return self
 
     def update(self, **kwargs):
@@ -151,15 +147,15 @@ class Model(object):
         """
         if self.check_columns(*tuple(key for key in kwargs.keys())):
             q, vals = self._sql_m()._update(self.name, **kwargs)
-            self.query.append(q)
-            self.values.append(vals)
+            self.append_query(q)
+            self.extend_values(vals)
         return self
 
     def delete(self):
         """
         Adds a DELETE query on the table associated with the model.
         """
-        self.query.append(self._sql_m()._delete(self.name))
+        self.append_query(self._sql_m()._delete(self.name))
         return self
 
     def where(self, **kwargs):
@@ -171,22 +167,55 @@ class Model(object):
         """
         if self.check_columns(*tuple(key for key in kwargs.keys())):
             q, vals = self._sql_m()._where(self.name, **kwargs)
-            self.query.append(q)
-            if len(self.values) == 1:
-                self.values[0].extend(vals)
-            else:
-                self.values.append(vals)
+            self.append_query(q)
+            self.extend_values(vals)
         return self
 
-    def _generate_statement(self):
+    def append_query(self, query):
         """
-        Prepares query and values instance variables for execution.
+        Appends query string to current _query attribute.
+
+        :param str query: A SQL query string.
         """
-        if len(self.values) == 1:
-            vals = tuple(self.values[0])
-        else:
-            vals = self.values
-        return ' '.join(self.query), vals
+        self._query.append(query)
+
+    def extend_values(self, values):
+        """
+        Extends _values with input values.
+
+        :param list values: Values to be inserted into the query.
+        """
+        self._values.extend(values)
+
+    def check_columns(self, *args):
+        """
+        Ensures columns exist on model before creating query string. Failing to
+        check columns can result in sql injection.
+
+        :param \*args: Columns to be checked against model.
+
+        :raises ValueError: If parameters are not columns on model.
+        """
+        column_names = set(col.attributes['name']
+                           for col in self._get_columns())
+        failed_columns = set(args) - column_names
+
+        if self.validate_columns and failed_columns:
+            msg = ('Columns {} were not found on the Model. Be wary of SQL '
+                   'injection.').format(failed_columns)
+            if self.raise_error_on_validation:
+                raise ValueError(msg)
+            else:
+                warnings.warn(msg)
+                return False
+        return True
+
+    def reset_query(self):
+        """
+        Resets query and values property on model.
+        """
+        self._query = []
+        self._values = []
 
     def connect(self):
         """
@@ -237,36 +266,6 @@ class Model(object):
         """
         self._cursor_properties = kwargs
 
-    def reset_query(self):
-        """
-        Resets query and values property on model.
-        """
-        self.query = []
-        self.values = []
-
-    def check_columns(self, *args):
-        """
-        Ensures columns exist on model before creating query string. Failing to
-        check columns can result in sql injection.
-
-        :param \*args: Columns to be checked against model.
-
-        :raises ValueError: If parameters are not columns on model.
-        """
-        column_names = set(col.attributes['name']
-                           for col in self._get_columns())
-        failed_columns = set(args) - column_names
-
-        if self.validate_columns and failed_columns:
-            msg = ('Columns {} were not found on the Model. Be wary of SQL '
-                   'injection.').format(failed_columns)
-            if self.raise_error_on_validation:
-                raise ValueError(msg)
-            else:
-                warnings.warn(msg)
-                return False
-        return True
-
     @property
     def name(self):
         """
@@ -284,3 +283,14 @@ class Model(object):
         except:
             self._connection = None
         return self._connection
+
+    @property
+    def query(self):
+        """
+        Returns the current query string.
+        """
+        return ' '.join(self._query)
+
+    @property
+    def values(self):
+        return tuple(self._values)
