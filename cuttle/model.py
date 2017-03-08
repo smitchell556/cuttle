@@ -128,10 +128,9 @@ class Model(object):
 
         :param list columns: The columns to insert values into.
         :param list values: Values to be inserted into the table. They must be
-                            in the same order as the columns. Expects a list.
+                            in the same order as the columns.
 
-        :note: If values are not ordered in the same sequence as columns, they
-               wont be in the proper column in the database.
+        :note: This only inserts a single entry into the database.
         """
         columns = self.columns_lower(*tuple(columns))
         if self.check_columns(*columns):
@@ -176,14 +175,14 @@ class Model(object):
             self.extend_values(vals)
         return self
 
-    def execute_query(self):
+    def execute(self):
         """
         Executes the query and returns the results (if any).
 
         :returns: A tuple of tuples. Where each inner tuple represents a
                   column.
         """
-        result = self._sql_m()._execute_query(self)
+        result = self._sql_m()._execute(self)
         self.reset_query()
         return result
 

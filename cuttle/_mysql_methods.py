@@ -4,7 +4,6 @@
 This module contains database methods for performing queries in MySQL.
 
 """
-# import mysql.connector
 import pymysql.cursors
 
 import _db_helpers
@@ -20,7 +19,7 @@ def _create_db(cls):
     tbl_classes = _db_helpers._nested_subclasses(cls)
 
     # Generate sql statements
-    create_db = 'CREATE DATABASE IF NOT EXISTS {}'.format(db_config['DB'])
+    create_db = _create_db(db_config['DB'])
     create_tbls = _generate_table_schema(db_config['DB'], tbl_classes)
 
     con = pymysql.connect(host=db_config['HOST'],
@@ -31,6 +30,14 @@ def _create_db(cls):
     cur.execute(create_tbls)
     cur.close()
     con.close()
+
+
+def _generate_db(db):
+    """
+    Genreates the create database statement.
+    """
+    create_db = 'CREATE DATABASE IF NOT EXISTS {}'.format(db)
+    return create_db
 
 
 def _generate_table_schema(db, tbl_classes):
@@ -181,7 +188,7 @@ def _where(name, **kwargs):
     return ' '.join(q), values
 
 
-def _execute_query(model):
+def _execute(model):
     """
     Executes a query and returns the results (if any).
     """

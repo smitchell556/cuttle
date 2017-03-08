@@ -4,7 +4,6 @@
 Tests for running mysql queries.
 
 """
-import pytest
 
 
 def test_mysql_select(db_and_model):

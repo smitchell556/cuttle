@@ -4,29 +4,14 @@
 Tests for configuring Cuttle.
 
 """
-import pytest
-
-import cuttle.columns
-
-import _helpers
+from cuttle._db_helpers import _nested_subclasses
 
 
-def test_nested_subclass_table_generation(db_and_subclass, mysql_config):
-    db, s_class = db_and_subclass
-    db.create_db()
+def test_nested_subclass_table_generation(db_and_subclass):
+    db, e_class, ne_class = db_and_subclass
 
-    exp_db = [('nonemptymodel',)]
-    exp_schema = [
-        ('test_int', 'int(11)', 'NO', 'PRI', None, 'auto_increment')]
-    db.create_db()
+    exp_models = [e_class, ne_class]
 
-    res_db = _helpers._mysql_query(
-        mysql_config,
-        "SHOW TABLES")
+    res_models = _nested_subclasses(db.Model)
 
-    res_schema = _helpers._mysql_query(
-        mysql_config,
-        "DESCRIBE nonemptymodel")
-
-    assert res_db == exp_db
-    assert res_schema == exp_schema
+    assert res_models == exp_models

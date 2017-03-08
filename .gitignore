@@ -1,6 +1,5 @@
 *.pyc
 .coverage
-tests/sql_db_config.py
 
 *.egg-info/
 .cache/
@@ -9,5 +8,3 @@ build/
 dist/
 docs/_build/
 venv/
-
-!docs/index.rst

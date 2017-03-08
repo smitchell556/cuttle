@@ -6,38 +6,24 @@ Test fixtures.
 """
 import gc
 
-import mysql.connector
 import pytest
 
 import cuttle.home
 import cuttle.model
 import cuttle.columns
 
-import _helpers
-import sql_db_config
-
-
-# configuration values
-# --------------------
-@pytest.fixture()
-def mysql_config():
-    return sql_db_config.mysql_config
-
 
 # object fixtures
 # ---------------
 @pytest.fixture()
-def mysql_db_obj(mysql_config):
-    db = cuttle.home.Cuttle(mysql_config['SQL_TYPE'],
-                            mysql_config['DB'],
-                            mysql_config['HOST'],
-                            mysql_config['USER'],
-                            mysql_config['PASSWD'])
+def mysql_db_obj():
+    db = cuttle.home.Cuttle('mysql',
+                            'fake_db',
+                            'localhost',
+                            'Ash',
+                            'squirtle_squad')
     yield db
     del db
-    _helpers._mysql_query(
-        mysql_config,
-        "DROP DATABASE IF EXISTS {}".format(mysql_config['DB']))
 
 
 @pytest.fixture()
@@ -80,7 +66,7 @@ def db_and_subclass(mysql_db_obj):
                                      primary_key=True)
         ]
 
-    yield mysql_db_obj, NonEmptyModel
+    yield mysql_db_obj, EmptyModel, NonEmptyModel
 
 
 def del_models(models):
