@@ -9,6 +9,8 @@ Version 0.4.0
 
 Minor release, unreleased
 
+- :func:`~cuttle.model.Model.where` accepts conditional and comparison operators.
+
 Version 0.3.0
 -------------
 
