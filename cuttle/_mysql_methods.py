@@ -194,10 +194,12 @@ def _where(model, condition, comparison, **kwargs):
     return ' '.join(q), values
 
 
-def _execute(model):
+def _execute(model, dict_cursor):
     """
     Executes a query and returns the results (if any).
     """
+    if dict_cursor:
+        model.connection.cursorclass = pymysql.cursors.DictCursor
     cursor = model.cursor()
     cursor.execute(model.query, model.values)
     result = cursor.fetchall()

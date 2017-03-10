@@ -178,14 +178,17 @@ class Model(object):
             self.extend_values(vals)
         return self
 
-    def execute(self):
+    def execute(self, dict_cursor=False):
         """
         Executes the query and returns the results (if any).
+
+        :param bool dict_cursor: If true, results will be in a dict instead of
+                                 a tuple.
 
         :returns: A tuple of tuples. Where each inner tuple represents a
                   column.
         """
-        result = self._sql_m()._execute(self)
+        result = self._sql_m()._execute(self, dict_cursor)
         self.reset_query()
         return result
 
@@ -279,29 +282,14 @@ class Model(object):
         finally:
             self._connection = None
 
-    def cursor(self, **kwargs):
+    def cursor(self):
         """
         Returns a cursor. Requires instance to be connected to the database
         first.
 
-        :param \**kwargs: Type(s) of cursor to use as boolean values.
-
         :note: It is the caller's responsibility to close the cursor.
         """
-        if kwargs:
-            return self.connection.cursor(**kwargs)
-        try:
-            return self.connection.cursor(**self._cursor_properties)
-        except:
-            return self.connection.cursor()
-
-    def cursor_properties(self, **kwargs):
-        """
-        Sets type of cursor to use.
-
-        :param \**kwargs: Type(s) of cursor to use as boolean values.
-        """
-        self._cursor_properties = kwargs
+        return self.connection.cursor()
 
     @property
     def name(self):
