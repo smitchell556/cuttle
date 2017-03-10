@@ -15,6 +15,7 @@ def test_mysql_create_db(db_and_model):
     exp_schema = ('USE fake_db; CREATE TABLE IF NOT EXISTS testtable ( '
                   'test_int_col INT AUTO_INCREMENT, '
                   'test_varchar_col VARCHAR(16), '
+                  'test_varchar_col2 VARCHAR(32), '
                   'PRIMARY KEY (test_int_col) );')
 
     db_name = db.Model._get_config()['DB']

@@ -37,7 +37,8 @@ def db_and_model(mysql_db_obj):
                                   'INT',
                                   auto_increment=True,
                                   primary_key=True),
-            cuttle.columns.Column('test_varchar_col', 'VARCHAR', maximum=16)
+            cuttle.columns.Column('test_varchar_col', 'VARCHAR', maximum=16),
+            cuttle.columns.Column('test_varchar_col2', 'VARCHAR', maximum=32)
         ]
     yield mysql_db_obj, TestTable
 

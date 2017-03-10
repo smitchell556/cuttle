@@ -124,7 +124,7 @@ def _make_con(db_config):
                            db=db_config['DB'])
 
 
-def _select(name, *args):
+def _select(model, *args):
     """
     Generates SELECT statement.
     """
@@ -133,15 +133,15 @@ def _select(name, *args):
         q.append(', '.join([c for c in args]))
     else:
         q.append('*')
-    q.append('FROM {}'.format(name))
+    q.append('FROM {}'.format(model.name))
     return ' '.join(q)
 
 
-def _insert(name, columns, values):
+def _insert(model, columns, values):
     """
     Generates INSERT statement.
     """
-    q = ['INSERT INTO {}'.format(name)]
+    q = ['INSERT INTO {}'.format(model.name)]
 
     c = '({})'.format(', '.join(columns))
     q.append(c)
@@ -153,7 +153,7 @@ def _insert(name, columns, values):
     return ' '.join(q), values
 
 
-def _update(name, **kwargs):
+def _update(model, **kwargs):
     """
     Generates UPDATE statement.
     """
@@ -162,19 +162,19 @@ def _update(name, **kwargs):
         columns.append(key)
         values.append(value)
 
-    q = ['UPDATE {} SET'.format(name)]
+    q = ['UPDATE {} SET'.format(model.name)]
     q.append(', '.join(['{}=%s'.format(column) for column in columns]))
     return ' '.join(q), values
 
 
-def _delete(name):
+def _delete(model):
     """
     Generates DELETE statement.
     """
-    return 'DELETE FROM {}'.format(name)
+    return 'DELETE FROM {}'.format(model.name)
 
 
-def _where(name, **kwargs):
+def _where(model, condition, comparison, **kwargs):
     """
     Generates WHERE statement.
     """
@@ -183,8 +183,14 @@ def _where(name, **kwargs):
         columns.append(key)
         values.append(value)
 
-    q = ['WHERE']
-    q.append(' AND '.join(['{}=%s'.format(column) for column in columns]))
+    q = []
+    if 'WHERE' in model.query:
+        q.append(condition)
+    else:
+        q.append('WHERE')
+
+    q.append(' {} '.format(condition).join(['{}{}%s'.format(column, comparison)
+                                            for column in columns]))
     return ' '.join(q), values
 
 

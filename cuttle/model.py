@@ -119,7 +119,7 @@ class Model(object):
         if args:
             args = self.columns_lower(*args)
         if self.check_columns(*args):
-            self.append_query(self._sql_m()._select(self.name, *args))
+            self.append_query(self._sql_m()._select(self, *args))
         return self
 
     def insert(self, columns, values):
@@ -134,7 +134,7 @@ class Model(object):
         """
         columns = self.columns_lower(*tuple(columns))
         if self.check_columns(*columns):
-            q, vals = self._sql_m()._insert(self.name, columns, values)
+            q, vals = self._sql_m()._insert(self, columns, values)
             self.append_query(q)
             self.extend_values(vals)
         return self
@@ -149,7 +149,7 @@ class Model(object):
         """
         kwargs = self.columns_lower(**kwargs)
         if self.check_columns(*tuple(key for key in kwargs.keys())):
-            q, vals = self._sql_m()._update(self.name, **kwargs)
+            q, vals = self._sql_m()._update(self, **kwargs)
             self.append_query(q)
             self.extend_values(vals)
         return self
@@ -158,10 +158,10 @@ class Model(object):
         """
         Adds a DELETE query on the table associated with the model.
         """
-        self.append_query(self._sql_m()._delete(self.name))
+        self.append_query(self._sql_m()._delete(self))
         return self
 
-    def where(self, **kwargs):
+    def where(self, condition='AND', comparison='=', **kwargs):
         """
         Adds a WHERE clause to the query. The WHERE clause checks for equality.
 
@@ -170,7 +170,8 @@ class Model(object):
         """
         kwargs = self.columns_lower(**kwargs)
         if self.check_columns(*tuple(key for key in kwargs.keys())):
-            q, vals = self._sql_m()._where(self.name, **kwargs)
+            q, vals = self._sql_m()._where(self, condition,
+                                           comparison, **kwargs)
             self.append_query(q)
             self.extend_values(vals)
         return self

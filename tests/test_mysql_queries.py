@@ -67,6 +67,8 @@ def test_mysql_where(db_and_model):
     exp_values1 = (1,)
     exp_where2 = 'WHERE test_int_col=%s AND test_varchar_col=%s'
     exp_values2 = (7, 'Goku')
+    exp_where3 = 'WHERE test_int_col<%s OR test_varchar_col=%s AND test_varchar_col2=%s'
+    exp_values3 = (7, 'Vegeta', 'Saiyan')
 
     t_obj = t_class()
 
@@ -79,3 +81,11 @@ def test_mysql_where(db_and_model):
     t_obj.where(test_int_col=7, test_varchar_col='Goku')
     assert t_obj.query == exp_where2
     assert t_obj.values == exp_values2
+
+    t_obj.reset_query()
+
+    t_obj.where(comparison='<', test_int_col=7)\
+         .where(condition='OR', test_varchar_col='Vegeta')\
+         .where(test_varchar_col2='Saiyan')
+    assert t_obj.query == exp_where3
+    assert t_obj.values == exp_values3
