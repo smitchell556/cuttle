@@ -10,6 +10,10 @@ Version 0.4.0
 Minor release, unreleased
 
 - :func:`~cuttle.model.Model.where` accepts conditional and comparison operators.
+- :func:`~cuttle.model.Model.execute_query` is replace by
+  :func:`~cuttle.model.Model.execute`.
+- Removed :func:`~cuttle.model.Model.cursor_properties` since choosing to use a
+  dict cursor is selected in the :func:`~cuttle.model.Model.execute` method now.
 
 Version 0.3.0
 -------------
