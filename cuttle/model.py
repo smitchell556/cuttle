@@ -165,6 +165,8 @@ class Model(object):
         """
         Adds a WHERE clause to the query. The WHERE clause checks for equality.
 
+        :param str condition: The conditional operator to use in the WHERE clause.
+        :param str comparison: The comparison operator to use in the WHERE clause.
         :param \**kwargs: Key value pairs where the keys are the columns of the
                           table.
         """
