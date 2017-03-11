@@ -7,7 +7,7 @@ database.
 """
 import warnings
 
-import _mysql_methods
+import pymysql.cursors
 
 
 class Model(object):
@@ -50,6 +50,10 @@ class Model(object):
         if self.__class__.__name__ == 'Model':
             err_msg = 'Do not make an instance of Model, make a subclass.'
             raise TypeError(err_msg)
+        #: Holds the connection to the database.
+        self._connection = None
+        #: Holds a cursor to the database.
+        self._cursor = None
         #: Holds query to be executed as a list of strings.
         self._query = []
         #: Holds values to be inserted into query when executed.
@@ -61,21 +65,23 @@ class Model(object):
         self.close()
 
     def __enter__(self):
-        self.connect()
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.close()
 
+    def __iter__(self):
+        return self.cursor.__iter__()
+
     @classmethod
     def _configure_model(cls, sql_type, db, host, user, passwd):
         """Configures the Model class to connect to the database."""
         if sql_type.lower() == 'mysql':
-            cls._config['SQL_METHODS'] = _mysql_methods
-            cls._config['DB'] = db
-            cls._config['HOST'] = host
-            cls._config['USER'] = user
-            cls._config['PASSWD'] = passwd
+            cls._config['sql_methods'] = sql_type.lower()
+            cls._config['db'] = db
+            cls._config['host'] = host
+            cls._config['user'] = user
+            cls._config['passwd'] = passwd
         else:
             msg = "Please choose a valid sql extension"
             raise ValueError(msg)
@@ -95,18 +101,111 @@ class Model(object):
         return cls.columns
 
     @classmethod
-    def _sql_m(cls):
-        """
-        Gets methods for specified sql implementation.
-        """
-        return cls._config['SQL_METHODS']
-
-    @classmethod
     def _create_db(cls):
         """
-        Creates database for specified sql implementation.
+        Creates database and tables.
+
+        :param cls: Expects the Model class.
         """
-        cls._sql_m()._create_db(cls)
+        db_config = cls._get_config()
+
+        # Generate sql statements
+        create_db = cls._generate_db()
+        create_tbls = cls._generate_table_schema()
+
+        con = pymysql.connect(host=db_config['host'],
+                              user=db_config['user'],
+                              passwd=db_config['passwd'])
+        cur = con.cursor()
+        cur.execute(create_db)
+        cur.execute(create_tbls)
+        cur.close()
+        con.close()
+
+    @classmethod
+    def _generate_db(cls):
+        """
+        Genreates the create database statement.
+        """
+        create_db = 'CREATE DATABASE IF NOT EXISTS {}'.format(cls._config[
+                                                              'db'])
+        return create_db
+
+    @classmethod
+    def _generate_table_schema(cls):
+        """
+        Generates table schema.
+        """
+        tbl_classes = _nested_subclasses(cls)
+        create_tbls = ['USE {};'.format(cls._config['db'])]
+
+        # construct table schema from tbl_classes columns list
+        for tbl in tbl_classes:
+            # table names will be all lower case based on the name of the model
+            tbl_name = tbl.__name__.lower()
+
+            if not hasattr(tbl, 'columns'):
+                continue
+
+            tbl_columns = tbl._get_columns()
+
+            create_tbls.append(
+                'CREATE TABLE IF NOT EXISTS {} ('.format(tbl_name))
+            p_key = None
+
+            for column in tbl_columns:
+                create_tbls.extend(cls._generate_column_schema(column))
+                if column.attributes['primary_key']:
+                    p_key = column.attributes['name']
+
+            if p_key is not None:
+                create_tbls.append('PRIMARY KEY ({})'.format(p_key))
+            if create_tbls[-1][-1] == ',':
+                create_tbls[-1] = create_tbls[-1][:-1]
+
+            create_tbls.append(');')
+
+        create_tbls = ' '.join(create_tbls)
+
+        return create_tbls
+
+    @classmethod
+    def _generate_column_schema(cls, column):
+        """
+        Generates column schema.
+        """
+        attr = column.attributes
+
+        create_col = [
+            attr['name'].lower()
+        ]
+
+        # add attributes
+        if attr['maximum'] is not None:
+            create_col.append('{}({})'.format(
+                attr['data_type'],
+                attr['maximum']))
+        elif attr['precision'] is not None:
+            create_col.append('{}{}'.format(
+                attr['data_type'],
+                attr['precision']))
+        else:
+            create_col.append(attr['data_type'])
+        if attr['required']:
+            create_col.append('NOT NULL')
+        if attr['unique']:
+            create_col.append('UNIQUE')
+        if attr['auto_increment']:
+            create_col.append('AUTO_INCREMENT')
+        if attr['default'] is not None:
+            create_col.append(
+                'DEFAULT {}'.format(attr['default']))
+        if attr['update'] is not None:
+            create_col.append(
+                'ON UPDATE {}'.format(attr['update']))
+        create_col[-1] += ','
+
+        return create_col
 
     def select(self, *args):
         """
@@ -119,10 +218,16 @@ class Model(object):
         if args:
             args = self.columns_lower(*args)
         if self.check_columns(*args):
-            self.append_query(self._sql_m()._select(self, *args))
+            q = ['SELECT']
+            if args:
+                q.append(', '.join([c for c in args]))
+            else:
+                q.append('*')
+            q.append('FROM {}'.format(self.name))
+            self.append_query(' '.join(q))
         return self
 
-    def insert(self, columns, values):
+    def insert(self, columns=[], values=[]):
         """
         Adds an INSERT query on the table associated with the model.
 
@@ -134,9 +239,17 @@ class Model(object):
         """
         columns = self.columns_lower(*tuple(columns))
         if self.check_columns(*columns):
-            q, vals = self._sql_m()._insert(self, columns, values)
-            self.append_query(q)
-            self.extend_values(vals)
+            q = ['INSERT INTO {}'.format(self.name)]
+
+            c = '({})'.format(', '.join(columns))
+            q.append(c)
+            q.append('VALUES')
+
+            holder = '({})'.format(
+                ', '.join(['%s' for __ in range(len(values))]))
+            q.append(holder)
+            self.append_query(' '.join(q))
+            self.extend_values(values)
         return self
 
     def update(self, **kwargs):
@@ -149,16 +262,22 @@ class Model(object):
         """
         kwargs = self.columns_lower(**kwargs)
         if self.check_columns(*tuple(key for key in kwargs.keys())):
-            q, vals = self._sql_m()._update(self, **kwargs)
-            self.append_query(q)
-            self.extend_values(vals)
+            columns, values = [], []
+            for key, value in kwargs.iteritems():
+                columns.append(key)
+                values.append(value)
+
+            q = ['UPDATE {} SET'.format(self.name)]
+            q.append(', '.join(['{}=%s'.format(column) for column in columns]))
+            self.append_query(' '.join(q))
+            self.extend_values(values)
         return self
 
     def delete(self):
         """
         Adds a DELETE query on the table associated with the model.
         """
-        self.append_query(self._sql_m()._delete(self))
+        self.append_query('DELETE FROM {}'.format(self.name))
         return self
 
     def where(self, condition='AND', comparison='=', **kwargs):
@@ -172,10 +291,22 @@ class Model(object):
         """
         kwargs = self.columns_lower(**kwargs)
         if self.check_columns(*tuple(key for key in kwargs.keys())):
-            q, vals = self._sql_m()._where(self, condition,
-                                           comparison, **kwargs)
-            self.append_query(q)
-            self.extend_values(vals)
+            columns, values = [], []
+            for key, value in kwargs.iteritems():
+                columns.append(key)
+                values.append(value)
+
+            q = []
+            if 'WHERE' in self.query:
+                q.append(condition)
+            else:
+                q.append('WHERE')
+
+            q.append(' {} '.format(condition).join(['{}{}%s'.format(column, comparison)
+                                                    for column in columns]))
+
+            self.append_query(' '.join(q))
+            self.extend_values(values)
         return self
 
     def execute(self, dict_cursor=False):
@@ -188,9 +319,42 @@ class Model(object):
         :returns: A tuple of tuples. Where each inner tuple represents a
                   column.
         """
-        result = self._sql_m()._execute(self, dict_cursor)
+        if dict_cursor:
+            self.connection.cursorclass = pymysql.cursors.DictCursor
+        self.cursor.execute(self.query, self.values)
         self.reset_query()
-        return result
+
+    def fetchone(self):
+        """
+        Fetches the next row.
+        """
+        return self.cursor.fetchone()
+
+    def fetchmany(self, size=None):
+        """
+        Fetches ``size`` number of rows or all if ``size`` is ``None``.
+
+        :param int size: The number of rows to fetch. Defaults to ``None``.
+        """
+        return self.cursor.fetchmany(size)
+
+    def fetchall(self):
+        """
+        Fetches all the rows in the cursor.
+        """
+        return self.cursor.fetchall()
+
+    def commit(self):
+        """
+        Commits changes.
+        """
+        self.connection.commit()
+
+    def rollback(self):
+        """
+        Rolls back the current transaction.
+        """
+        self.connection.rollback()
 
     def append_query(self, query):
         """
@@ -257,39 +421,23 @@ class Model(object):
         self._query = []
         self._values = []
 
-    def connect(self):
-        """
-        Connects the model to the database.
-
-        :note: If model is instantiated outside of a with block, the
-               ``connect()`` method must be explicitly called before
-               performing any queries.
-        """
-        self.close()
-        self._connection = self._sql_m()._make_con(self._get_config())
-
     def close(self):
         """
-        Closes the database connection.
+        Closes the database connection and cursor, if any.
 
-        :note: If model is instantiated outside of a with block, the ``close()``
-               method must be explicitly called.
+        :note: If model is instantiated outside of a with block, it is recommended
+               to explicitly call ``close()``.
         """
+        try:
+            self.cursor.close()
+        except:
+            pass
+        finally:
+            self._cursor = None
         try:
             self.connection.close()
         except:
             pass
-        finally:
-            self._connection = None
-
-    def cursor(self):
-        """
-        Returns a cursor. Requires instance to be connected to the database
-        first.
-
-        :note: It is the caller's responsibility to close the cursor.
-        """
-        return self.connection.cursor()
 
     @property
     def name(self):
@@ -301,13 +449,35 @@ class Model(object):
     @property
     def connection(self):
         """
-        Returns a connection to the database.
+        Returns a connection to the database. Creates a connection if one hasn't
+        already been made.
+
+        Use :func:`~cuttle.home.Model.close` to close the connection.
         """
         try:
-            return self._connection
+            self._connection.ping()
         except:
-            self._connection = None
+            config = self._get_config()
+            self._connection = pymysql.connect(host=config['host'],
+                                               user=config['user'],
+                                               passwd=config['passwd'],
+                                               db=config['db'])
         return self._connection
+
+    @property
+    def cursor(self):
+        """
+        Returns a cursor to the database.
+
+        :note: A connection will automatically be made to the database before
+               creating a cursor.
+        """
+        if self._cursor is None or self._cursor.connection is None:
+            try:
+                self._cursor = self.connection.cursor()
+            except:
+                raise
+        return self._cursor
 
     @property
     def query(self):
@@ -322,3 +492,11 @@ class Model(object):
         Returns the values as a tuple.
         """
         return tuple(self._values)
+
+
+def _nested_subclasses(cls):
+    """
+    Creates a list of all nested subclasses.
+    """
+    return cls.__subclasses__() + [s for sc in cls.__subclasses__()
+                                   for s in _nested_subclasses(sc)]

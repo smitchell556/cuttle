@@ -9,7 +9,6 @@ import time
 import pytest
 
 import cuttle.home
-import cuttle._mysql_methods
 
 
 def test_config_values():
@@ -17,15 +16,15 @@ def test_config_values():
     db = cuttle.home.Cuttle(
         'mysql', db_name, 'localhost', 'test_user', 'test_pw')
     expected = {
-        'DB': db_name,
-        'HOST': 'localhost',
-        'USER': 'test_user',
-        'PASSWD': 'test_pw'
+        'db': db_name,
+        'host': 'localhost',
+        'user': 'test_user',
+        'passwd': 'test_pw'
     }
-    assert expected['DB'] == db.Model._config['DB']
-    assert expected['HOST'] == db.Model._config['HOST']
-    assert expected['USER'] == db.Model._config['USER']
-    assert expected['PASSWD'] == db.Model._config['PASSWD']
+    assert expected['db'] == db.Model._config['db']
+    assert expected['host'] == db.Model._config['host']
+    assert expected['user'] == db.Model._config['user']
+    assert expected['passwd'] == db.Model._config['passwd']
 
 
 def test_invalid_sql():
@@ -40,13 +39,12 @@ def test_case_insensitive_sql_type():
     db = cuttle.home.Cuttle(
         'MYSQL', db_name, 'localhost', 'test_user', 'test_pw')
     expected = {
-        'DB': db_name,
-        'HOST': 'localhost',
-        'USER': 'test_user',
-        'PASSWD': 'test_pw'
+        'db': db_name,
+        'host': 'localhost',
+        'user': 'test_user',
+        'passwd': 'test_pw'
     }
-    assert cuttle._mysql_methods == db.Model._config['SQL_METHODS']
-    assert expected['DB'] == db.Model._config['DB']
-    assert expected['HOST'] == db.Model._config['HOST']
-    assert expected['USER'] == db.Model._config['USER']
-    assert expected['PASSWD'] == db.Model._config['PASSWD']
+    assert expected['db'] == db.Model._config['db']
+    assert expected['host'] == db.Model._config['host']
+    assert expected['user'] == db.Model._config['user']
+    assert expected['passwd'] == db.Model._config['passwd']

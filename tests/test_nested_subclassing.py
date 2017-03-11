@@ -4,7 +4,7 @@
 Tests for configuring Cuttle.
 
 """
-from cuttle._db_helpers import _nested_subclasses
+from cuttle.model import _nested_subclasses
 
 
 def test_nested_subclass_table_generation(db_and_subclass):
