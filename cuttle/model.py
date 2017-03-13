@@ -10,6 +10,43 @@ import warnings
 import pymysql.cursors
 
 
+LEGAL_COMPARISONS = [
+    'BETWEEN',
+    'COALESCE()',
+    '=',
+    '<=>',
+    '>',
+    '>=',
+    'GREATEST()',
+    'IN()',
+    'INTERVAL()',
+    'IS',
+    'IS NOT',
+    'IS NOT NULL',
+    'ISNULL()',
+    'LEAST()',
+    '<',
+    '<=',
+    'LIKE',
+    'NOT BETWEEN',
+    '!=',
+    '<>',
+    'NOT IN()',
+    'NOT LIKE',
+    'STRCMP()'
+]
+
+LEGAL_CONDITIONS = [
+    'AND',
+    '&&',
+    'NOT',
+    '!',
+    'OR',
+    '||',
+    'XOR'
+]
+
+
 class Model(object):
     """
     Model represents a table. It is used for querying the database. It is meant
@@ -288,7 +325,13 @@ class Model(object):
         :param str comparison: The comparison operator to use in the WHERE clause.
         :param \**kwargs: Key value pairs where the keys are the columns of the
                           table.
+
+        :raises ValueError: If condition or comparison operator is invalid.
         """
+        if condition not in LEGAL_CONDITIONS or comparison not in LEGAL_COMPARISONS:
+            raise ValueError(
+                'The conditional or comparison operator is not legal.')
+
         kwargs = self.columns_lower(**kwargs)
         if self.check_columns(*tuple(key for key in kwargs.keys())):
             columns, values = [], []

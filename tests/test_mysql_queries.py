@@ -4,6 +4,7 @@
 Tests for running mysql queries.
 
 """
+import pytest
 
 
 def test_mysql_select(db_and_model):
@@ -89,3 +90,11 @@ def test_mysql_where(db_and_model):
          .where(test_varchar_col2='Saiyan')
     assert t_obj.query == exp_where3
     assert t_obj.values == exp_values3
+
+    t_obj.reset_query()
+
+    with pytest.raises(ValueError):
+        t_obj.where(comparison="' OR 1'", test_varchar_col='Buu')
+
+    with pytest.raises(ValueError):
+        t_obj.where(condition="' OR 1'", test_varchar_col='Buu')
