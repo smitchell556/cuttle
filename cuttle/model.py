@@ -328,6 +328,8 @@ class Model(object):
 
         :raises ValueError: If condition or comparison operator is invalid.
         """
+        condition = condition.upper()
+        comparison = comparison.upper()
         if condition not in LEGAL_CONDITIONS or comparison not in LEGAL_COMPARISONS:
             raise ValueError(
                 'The conditional or comparison operator is not legal.')
