@@ -20,8 +20,13 @@ Minor release, unreleased
   fetch methods.
 - Created :func:`~cuttle.model.Model.fetchone`, :func:`~cuttle.model.Model.fetchmany`,
   and :func:`~cuttle.model.Model.fetchall` methods to fetch rows.
+- Added an ``__iter__()`` method to :class:`~cuttle.model.Model` for returning
+  rows from fetch operations.
 - Made database connection instantiation lazy. A connection won't be made until it's
   needed. Removed the ``connect()`` method as a result since it's unneeded.
+- Change :class:`~cuttle.home.Cuttle` parameters to kwargs for more flexibility
+  when creating connection objects.
+- Check comparison/conditional operators for validity in :func:`~cuttle.model.Model.where`.
 
 Version 0.3.0
 -------------
