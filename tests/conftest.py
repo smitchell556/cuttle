@@ -18,10 +18,10 @@ import cuttle.columns
 @pytest.fixture()
 def mysql_db_obj():
     db = cuttle.home.Cuttle('mysql',
-                            'fake_db',
-                            'localhost',
-                            'Ash',
-                            'squirtle_squad')
+                            db='fake_db',
+                            host='localhost',
+                            user='Ash',
+                            passwd='squirtle_squad')
     yield db
     del db
 
@@ -50,17 +50,10 @@ def db_and_subclass(mysql_db_obj):
 
     class EmptyModel(mysql_db_obj.Model):
 
-        def __init__(self):
-            super(EmptyModel, self).__init__()
-
         def foo(self):
             return 'foo'
 
     class NonEmptyModel(EmptyModel):
-
-        def __init__(self):
-            super(NonEmptyModel, self).__init__()
-
         columns = [
             cuttle.columns.IntColumn('test_int',
                                      auto_increment=True,

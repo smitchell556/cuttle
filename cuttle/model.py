@@ -5,6 +5,7 @@ This module contains the Model class which is used to make querys on the
 database.
 
 """
+import copy
 import warnings
 
 import pymysql.cursors
@@ -111,14 +112,13 @@ class Model(object):
         return self.cursor.__iter__()
 
     @classmethod
-    def _configure_model(cls, sql_type, db, host, user, passwd):
+    def _configure_model(cls, sql_type, **kwargs):
         """Configures the Model class to connect to the database."""
+        if 'db' not in kwargs and 'database' not in kwargs:
+            raise ValueError('A database name is required.')
         if sql_type.lower() == 'mysql':
             cls._config['sql_methods'] = sql_type.lower()
-            cls._config['db'] = db
-            cls._config['host'] = host
-            cls._config['user'] = user
-            cls._config['passwd'] = passwd
+            cls._config['connection_arguments'] = kwargs
         else:
             msg = "Please choose a valid sql extension"
             raise ValueError(msg)
@@ -144,15 +144,18 @@ class Model(object):
 
         :param cls: Expects the Model class.
         """
-        db_config = cls._get_config()
+        db_config = copy.deepcopy(cls._get_config['connection_arguments'])
+        db = db_config.pop('db', None)
+        if db is None:
+            db = db_config.pop('database', None)
+        else:
+            db_config.pop('database', None)
 
         # Generate sql statements
-        create_db = cls._generate_db()
-        create_tbls = cls._generate_table_schema()
+        create_db = cls._generate_db(db)
+        create_tbls = cls._generate_table_schema(db)
 
-        con = pymysql.connect(host=db_config['host'],
-                              user=db_config['user'],
-                              passwd=db_config['passwd'])
+        con = pymysql.connect(**db_config)
         cur = con.cursor()
         cur.execute(create_db)
         cur.execute(create_tbls)
@@ -160,21 +163,20 @@ class Model(object):
         con.close()
 
     @classmethod
-    def _generate_db(cls):
+    def _generate_db(cls, db):
         """
         Genreates the create database statement.
         """
-        create_db = 'CREATE DATABASE IF NOT EXISTS {}'.format(cls._config[
-                                                              'db'])
+        create_db = 'CREATE DATABASE IF NOT EXISTS {}'.format(db)
         return create_db
 
     @classmethod
-    def _generate_table_schema(cls):
+    def _generate_table_schema(cls, db):
         """
         Generates table schema.
         """
         tbl_classes = _nested_subclasses(cls)
-        create_tbls = ['USE {};'.format(cls._config['db'])]
+        create_tbls = ['USE {};'.format(db)]
 
         # construct table schema from tbl_classes columns list
         for tbl in tbl_classes:
@@ -354,12 +356,14 @@ class Model(object):
             self.extend_values(values)
         return self
 
-    def execute(self, dict_cursor=False):
+    def execute(self, dict_cursor=False, commit=True):
         """
         Executes the query and returns the results (if any).
 
         :param bool dict_cursor: If true, results will be in a dict instead of
                                  a tuple.
+        :param bool commit: Will commit the executed statement if ``True``.
+                            Defaults to ``True``
 
         :returns: A tuple of tuples. Where each inner tuple represents a
                   column.
@@ -368,6 +372,11 @@ class Model(object):
             self.connection.cursorclass = pymysql.cursors.DictCursor
         self.cursor.execute(self.query, self.values)
         self.reset_query()
+
+        if commit:
+            self.commit()
+
+        return self
 
     def fetchone(self):
         """
@@ -502,17 +511,15 @@ class Model(object):
         try:
             self._connection.ping()
         except:
-            config = self._get_config()
-            self._connection = pymysql.connect(host=config['host'],
-                                               user=config['user'],
-                                               passwd=config['passwd'],
-                                               db=config['db'])
+            connection_arguments = self._get_config()['connection_arguments']
+            self._connection = pymysql.connect(**connection_arguments)
         return self._connection
 
     @property
     def cursor(self):
         """
-        Returns a cursor to the database.
+        Returns a cursor to the database. The cursor must be closed explicitly
+        before a new one will be made.
 
         :note: A connection will automatically be made to the database before
                creating a cursor.

@@ -17,11 +17,8 @@ class Cuttle(object):
 
     :param str sql_type: Determines what sql implementation to use (MySQL,
                          SQLite, etc).
-    :param str db: The database to be used.
-    :param str host: The host to be used. Defaults to None.
-    :param str user: The user of the database to login under. Defaults to None.
-    :param str passwd: The passwd for the user of the database. Defaults to
-                       None.
+    :param \**kwargs: Arguments to be passed to the connection object when
+                      connections are made.
 
     :example: Instantiating Cuttle is as simple as:
 
@@ -29,11 +26,10 @@ class Cuttle(object):
               >>> db = Cuttle('mysql', 'test_db', 'localhost', 'squirtle', 'my_passwd')
     """
 
-    def __init__(self, sql_type, db,
-                 host=None, user=None, passwd=None):
+    def __init__(self, sql_type, **kwargs):
         #: Holds Model class.
         self.Model = model.Model
-        self.Model._configure_model(sql_type, db, host, user, passwd)
+        self.Model._configure_model(sql_type, **kwargs)
 
     def create_db(self):
         """

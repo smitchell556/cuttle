@@ -17,11 +17,11 @@ def test_mysql_create_db(db_and_model):
                   'test_varchar_col2 VARCHAR(32), '
                   'PRIMARY KEY (test_int_col) );')
 
-    db_name = db.Model._get_config()['db']
+    db_name = db.Model._get_config()['connection_arguments']['db']
     model_subclasses = _nested_subclasses(db.Model)
 
-    res_db = db.Model._generate_db()
-    res_schema = db.Model._generate_table_schema()
+    res_db = db.Model._generate_db(db_name)
+    res_schema = db.Model._generate_table_schema(db_name)
 
     assert res_db == exp_db
     assert res_schema == exp_schema
