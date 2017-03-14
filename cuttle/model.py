@@ -141,9 +141,9 @@ class Model(object):
         """
         Creates database and tables.
 
-        :param cls: Expects the Model class.
+        :note: Expects the ``Model`` base class.
         """
-        db_config = cls._get_config['connection_arguments']
+        db_config = cls._get_config()['connection_arguments']
         db = db_config.get('db', False) or db_config.get('database', False)
         if not db:
             raise ValueError('A database must be specified.')
@@ -154,17 +154,28 @@ class Model(object):
         create_db = cls._generate_db(db)
         create_tbls = cls._generate_table_schema(db)
 
-        con = pymysql.connect(**db_config)
-        cur = con.cursor()
-        cur.execute(create_db)
-        cur.execute(create_tbls)
-        cur.close()
-        con.close()
+        CreateDB = type('CreateDB', (cls,), {})
+
+        cdb = CreateDB()
+        cdb._connection = pymysql.connect(**db_config)
+
+        # Create database
+        cdb.append_query(create_db)
+        cdb.execute()
+        cdb.cursor.close()
+
+        # Create tables
+        cdb.append_query(create_tbls)
+        cdb.execute()
+
+        cdb.close()
 
     @classmethod
     def _generate_db(cls, db):
         """
         Genreates the create database statement.
+
+        :param str db: The name of the database to create.
         """
         create_db = 'CREATE DATABASE IF NOT EXISTS {}'.format(db)
         return create_db
@@ -173,6 +184,8 @@ class Model(object):
     def _generate_table_schema(cls, db):
         """
         Generates table schema.
+
+        :param str db: The name of the database to add the tables to.
         """
         tbl_classes = _nested_subclasses(cls)
         create_tbls = ['USE {};'.format(db)]
@@ -207,10 +220,12 @@ class Model(object):
 
         return create_tbls
 
-    @classmethod
-    def _generate_column_schema(cls, column):
+    @staticmethod
+    def _generate_column_schema(column):
         """
         Generates column schema.
+
+        :param obj column: A :class:`~cuttle.columns.Column` object.
         """
         attr = column.attributes
 
@@ -364,18 +379,17 @@ class Model(object):
         :param bool commit: Will commit the executed statement if ``True``.
                             Defaults to ``True``
 
-        :returns: A tuple of tuples. Where each inner tuple represents a
-                  column.
+        :returns: The result of ``cursor.execute()``.
         """
         if dict_cursor:
             self.connection.cursorclass = pymysql.cursors.DictCursor
-        self.cursor.execute(self.query, self.values)
+        result = self.cursor.execute(self.query, self.values)
         self.reset_query()
 
         if commit:
             self.commit()
 
-        return self
+        return result
 
     def fetchone(self):
         """
