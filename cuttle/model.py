@@ -5,7 +5,6 @@ This module contains the Model class which is used to make querys on the
 database.
 
 """
-import copy
 import warnings
 
 import pymysql.cursors
@@ -144,12 +143,12 @@ class Model(object):
 
         :param cls: Expects the Model class.
         """
-        db_config = copy.deepcopy(cls._get_config['connection_arguments'])
-        db = db_config.pop('db', None)
-        if db is None:
-            db = db_config.pop('database', None)
-        else:
-            db_config.pop('database', None)
+        db_config = cls._get_config['connection_arguments']
+        db = db_config.get('db', False) or db_config.get('database', False)
+        if not db:
+            raise ValueError('A database must be specified.')
+        db_config = {k: v for k, v in db_config.iteritems()
+                     if k != 'db' and k != 'database'}
 
         # Generate sql statements
         create_db = cls._generate_db(db)
