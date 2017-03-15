@@ -195,7 +195,7 @@ class Model(object):
             # table names will be all lower case based on the name of the model
             tbl_name = tbl.__name__.lower()
 
-            if not hasattr(tbl, 'columns'):
+            if not tbl.__dict__.get('columns', False):
                 continue
 
             tbl_columns = tbl._get_columns()
