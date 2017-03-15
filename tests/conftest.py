@@ -8,7 +8,7 @@ import gc
 
 import pytest
 
-import cuttle.home
+import cuttle.reef
 import cuttle.model
 import cuttle.columns
 
@@ -17,7 +17,7 @@ import cuttle.columns
 # ---------------
 @pytest.fixture()
 def mysql_db_obj():
-    db = cuttle.home.Cuttle('mysql',
+    db = cuttle.reef.Cuttle('mysql',
                             db='fake_db',
                             host='localhost',
                             user='Ash',

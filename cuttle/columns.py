@@ -38,9 +38,10 @@ class Column(object):
     :note: If an attribute is not specified, then the default of the SQL
            implementation will be used. 
     """
+
     def __init__(self, name, data_type, maximum=None, precision=None,
                  decimal_precision=None, required=False, unique=False,
-                 auto_increment=False, default=None, update=None, 
+                 auto_increment=False, default=None, update=None,
                  primary_key=False):
         # ensure maximum and precision are not set at the same time.
         # the column can have a max character count or precision (if decimal),
@@ -57,7 +58,7 @@ class Column(object):
         #: Contains values specifying column parameters.
         self.attributes = {
             'name': name,
-            'data_type': data_type,
+            'data_type': data_type.upper(),
             'maximum': maximum,
             'precision': precision,
             'required': required,
@@ -77,6 +78,7 @@ class IntColumn(Column):
     :param \**kwargs: Column parameters. Check :class:`~cuttle.columns.Column`
                       for acceptable arguments.
     """
+
     def __init__(self, name, **kwargs):
         super(IntColumn, self).__init__(name, 'INT', **kwargs)
 
@@ -89,18 +91,20 @@ class DecimalColumn(Column):
     :param \**kwargs: Column parameters. Check :class:`~cuttle.columns.Column`
                       for acceptable arguments.
     """
+
     def __init__(self, name, **kwargs):
         super(DecimalColumn, self).__init__(name, 'DECIMAL', **kwargs)
 
 
 class TextColumn(Column):
     """
-    Represents a text column in database.
+    Represents a varchar column in database.
 
     :param name: Name of column.
     :param \**kwargs: Column parameters. Check :class:`~cuttle.columns.Column`
                       for acceptable arguments.
     """
+
     def __init__(self, name, **kwargs):
         super(TextColumn, self).__init__(name, 'VARCHAR', **kwargs)
 
@@ -113,6 +117,7 @@ class DateColumn(Column):
     :param \**kwargs: Column parameters. Check :class:`~cuttle.columns.Column`
                       for acceptable arguments.
     """
+
     def __init__(self, name, **kwargs):
         super(DateColumn, self).__init__(name, 'DATE', **kwargs)
 
@@ -125,5 +130,6 @@ class DateTimeColumn(Column):
     :param \**kwargs: Column parameters. Check :class:`~cuttle.columns.Column`
                       for acceptable arguments.
     """
+
     def __init__(self, name, **kwargs):
         super(DateTimeColumn, self).__init__(name, 'DATETIME', **kwargs)

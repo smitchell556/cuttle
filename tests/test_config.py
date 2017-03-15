@@ -8,7 +8,7 @@ import time
 
 import pytest
 
-import cuttle.home
+import cuttle.reef
 
 
 def test_config_values():
@@ -18,7 +18,7 @@ def test_config_values():
         'user': 'test_user',
         'passwd': 'test_pw'
     }
-    db = cuttle.home.Cuttle(
+    db = cuttle.reef.Cuttle(
         'mysql', **expected)
     assert expected == db.Model._config['connection_arguments']
 
@@ -31,7 +31,7 @@ def test_invalid_sql():
         'passwd': 'test_pw'
     }
     with pytest.raises(ValueError):
-        db = cuttle.home.Cuttle(
+        db = cuttle.reef.Cuttle(
             'sqlame', **con_kwargs)
 
 
@@ -42,7 +42,7 @@ def test_case_insensitive_sql_type():
         'user': 'test_user',
         'passwd': 'test_pw'
     }
-    db = cuttle.home.Cuttle(
+    db = cuttle.reef.Cuttle(
         'MYSQL', **expected)
     assert expected == db.Model._config['connection_arguments']
 
@@ -54,5 +54,5 @@ def test_no_db_arg():
         'passwd': 'test_pw'
     }
     with pytest.raises(ValueError):
-        db = cuttle.home.Cuttle(
+        db = cuttle.reef.Cuttle(
             'mysql', **con_kwargs)

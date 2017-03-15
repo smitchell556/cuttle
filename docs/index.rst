@@ -16,12 +16,11 @@ understanding Cuttle. There's not much to it so let's get started.
 .. toctree::
    :maxdepth: 2
 
-   .. tutorial      
+   tutorial
    api
    Changelog </changelog_link>
 
-.. dependencies
-   To learn more about what makes Cuttle tick, check out the database connectors
-   Cuttle uses
+To learn more about what makes Cuttle tick, check out the database connectors
+Cuttle uses.
    
-   mysql-connector python
+- `PyMySQL <https://github.com/PyMySQL/PyMySQL>`_

@@ -4,7 +4,6 @@
 Tests for creating database(s).
 
 """
-from cuttle.model import _nested_subclasses
 
 
 def test_mysql_create_db(db_and_model):
@@ -18,7 +17,6 @@ def test_mysql_create_db(db_and_model):
                   'PRIMARY KEY (test_int_col) );')
 
     db_name = db.Model._get_config()['connection_arguments']['db']
-    model_subclasses = _nested_subclasses(db.Model)
 
     res_db = db.Model._generate_db(db_name)
     res_schema = db.Model._generate_table_schema(db_name)
