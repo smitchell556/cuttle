@@ -4,10 +4,13 @@ Cuttle Changelog
 
 Here are the changes made to Cuttle for each release.
 
-Version 0.4.0
+Version 0.5.0
 -------------
 
 Minor release, unreleased
+
+Version 0.4.0
+-------------
 
 - :func:`~cuttle.model.Model.where` accepts conditional and comparison operators.
 - ``execute_query()`` is replace by
