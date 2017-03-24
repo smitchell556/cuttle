@@ -377,13 +377,20 @@ class Model(object):
         :param bool dict_cursor: If true, results will be in a dict instead of
                                  a tuple.
         :param bool commit: Will commit the executed statement if ``True``.
-                            Defaults to ``True``
+                            Defaults to ``True``.
 
         :returns: The result of ``cursor.execute()``.
         """
+        try:
+            self._cursor.close()
+        except:
+            pass
+
         if dict_cursor:
             self.connection.cursorclass = pymysql.cursors.DictCursor
+
         result = self.cursor.execute(self.query, self.values)
+
         self.reset_query()
 
         if commit:
@@ -496,13 +503,11 @@ class Model(object):
                to explicitly call ``close()``.
         """
         try:
-            self.cursor.close()
+            self._cursor.close()
         except:
             pass
-        finally:
-            self._cursor = None
         try:
-            self.connection.close()
+            self._connection.close()
         except:
             pass
 
@@ -538,10 +543,7 @@ class Model(object):
                creating a cursor.
         """
         if self._cursor is None or self._cursor.connection is None:
-            try:
-                self._cursor = self.connection.cursor()
-            except:
-                raise
+            self._cursor = self.connection.cursor()
         return self._cursor
 
     @property
