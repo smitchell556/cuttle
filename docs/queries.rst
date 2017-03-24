@@ -101,6 +101,36 @@ updated, but the other row wasn't. ::
 
 Now you have a lot more flexibility to interact with your table.
 
+DELETE
+------
+
+Next is deleting entries. Let's insert a third catfish to demonstrate. ::
+
+  >>> cols = ['fish_type', 'fish_name', 'age', 'personality']
+  >>> vals = ['catfish', 'Rascal', 7, 'moody']
+  >>> touch_pool.insert(cols, vals).execute()
+  >>> touch_pool.select().execute()
+  >>> for fish in touch_pool:
+  ...     print fish
+  ...
+  (1, 'catfish', 'Hermes', 3, 'cuddly')
+  (2, 'catfish', 'Xerxes', 4, 'aloof')
+  (3, 'catfish', 'Rascal', 7, 'moody')
+
+Rascal's owner just dropped him off for a visit and is back to pick him up, so
+it's time to delete Rascal from the table::
+
+  >> touch_pool.delete().where(fish_name='Rascal').execute()
+
+If you check the rows, you'll see Rascal's no longer there. ::
+
+  >>> touch_pool.select().execute()
+  >>> for fish in touch_pool:
+  ...     print fish
+  ...
+  (1, 'catfish', 'Hermes', 3, 'cuddly')
+  (2, 'catfish', 'Xerxes', 4, 'aloof')
+
 Closing the Connection
 ----------------------
 
@@ -122,5 +152,7 @@ automatically close the connection on exit. Just instantiate an object in a
 
   >>> with TouchPool() as touch_pool:
   ...     # do whatever you want with touch_pool
+
+It's recommended to use the context manager to handle closing connections.
 
 You've got the basics down, now check out :doc:`extend_model`

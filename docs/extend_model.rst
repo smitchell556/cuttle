@@ -36,8 +36,8 @@ Now add the following method to that class so that it looks like this::
           if order not in ['ASC', 'DESC']:
               raise ValueError('{} is not a proper keyword'.format(order))
 
-          # Convert column names in kwargs to lowercase since the columns in
-          # the table are converted to lowercase when the database is created.
+          # Convert column name to lowercase since the column(s) in the table
+          # are converted to lowercase when the database is created.
           column = self.columns_lower(column)[0]
 
           # Check columns are valid to prevent SQL injection.

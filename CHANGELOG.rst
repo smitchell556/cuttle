@@ -9,6 +9,8 @@ Version 0.5.0
 
 Minor release, unreleased
 
+- Close pre-existing cursor (if exists) in :func:`~cuttle.model.Model.execute`.
+
 Version 0.4.0
 -------------
 
