@@ -286,9 +286,9 @@ class Model(object):
 
         :param list columns: The columns to insert values into.
         :param list values: Values to be inserted into the table. They must be
-                            in the same order as the columns.
-
-        :note: This only inserts a single entry into the database.
+                            in the same order as the columns. Also accepts a
+                            list of lists/tuples which would be used with
+                            :func:`~cuttle.model.Model.executemany`.
         """
         columns = self.columns_lower(*tuple(columns))
         if self.check_columns(*columns):
@@ -299,7 +299,7 @@ class Model(object):
             q.append('VALUES')
 
             holder = '({})'.format(
-                ', '.join(['%s' for __ in range(len(values))]))
+                ', '.join(['%s' for __ in range(len(columns))]))
             q.append(holder)
             self.append_query(' '.join(q))
             self.extend_values(values)
@@ -397,6 +397,41 @@ class Model(object):
             self.connection.cursorclass = pymysql.cursors.DictCursor
 
         result = self.cursor.execute(self.query, self.values)
+
+        self.reset_query()
+
+        if commit:
+            self.commit()
+
+        return result
+
+    def executemany(self, dict_cursor=False, unbuffered_cursor=False, commit=True):
+        """
+        Executes the query with multiple values and returns the results (if any).
+
+        :param bool dict_cursor: If true, results will be in a dict instead of
+                                 a tuple. Defaults to ``False``.
+        :param bool dict_cursor: If true, uses an unbuffered cursor for
+                                 queries. Defaults to ``False``.
+        :param bool commit: Will commit the executed statement if ``True``.
+                            Defaults to ``True``.
+
+        :returns: The result of ``cursor.execute()``.
+
+        :note: If both ``dict_cursor`` and ``unbuffered_cursor`` are ``True``,
+               An unbuffered cursor will be used, and the results returned will
+               be formatted as dictionaries.
+        """
+        self._close_cursor()
+
+        if dict_cursor and unbuffered_cursor:
+            self.connection.cursorclass = pymysql.cursors.SSDictCursor
+        elif unbuffered_cursor:
+            self.connection.cursorclass = pymysql.cursors.SSCursor
+        elif dict_cursor:
+            self.connection.cursorclass = pymysql.cursors.DictCursor
+
+        result = self.cursor.executemany(self.query, self.seq_of_values)
 
         self.reset_query()
 
@@ -585,6 +620,13 @@ class Model(object):
         Returns the values as a tuple.
         """
         return tuple(self._values)
+
+    @property
+    def seq_of_values(self):
+        """
+        Returns a sequence of values as tuples.
+        """
+        return [tuple(v) for v in self._values]
 
 
 def _nested_subclasses(cls):

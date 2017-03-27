@@ -37,6 +37,21 @@ def test_mysql_insert(db_and_model):
     assert t_obj.values == exp_values
 
 
+def test_mysql_insert_many(db_and_model):
+    t_class = db_and_model[1]
+
+    exp_insert = ('INSERT INTO testtable (test_int_col, test_varchar_col) '
+                  'VALUES (%s, %s)')
+    exp_values = [(None, 'Vegeta'), (7, 'Goku')]
+
+    t_obj = t_class()
+    t_obj.insert(('test_int_col', 'test_varchar_col'),
+                 [[None, 'Vegeta'], [7, 'Goku']])
+
+    assert t_obj.query == exp_insert
+    assert t_obj.seq_of_values == exp_values
+
+
 def test_mysql_update(db_and_model):
     t_class = db_and_model[1]
     t_obj = t_class()
