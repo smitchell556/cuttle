@@ -84,7 +84,7 @@ class Model(object):
     _config = {}
 
     def __init__(self, validate_columns=True, raise_error_on_validation=True):
-        if self.__class__.__name__ == 'Model':
+        if type(self) == Model:
             err_msg = 'Do not make an instance of Model, make a subclass.'
             raise TypeError(err_msg)
         #: Holds the connection to the database.
