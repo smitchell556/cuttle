@@ -370,20 +370,30 @@ class Model(object):
             self.extend_values(values)
         return self
 
-    def execute(self, dict_cursor=False, commit=True):
+    def execute(self, dict_cursor=False, unbuffered_cursor=False, commit=True):
         """
         Executes the query and returns the results (if any).
 
         :param bool dict_cursor: If true, results will be in a dict instead of
-                                 a tuple.
+                                 a tuple. Defaults to ``False``.
+        :param bool dict_cursor: If true, uses an unbuffered cursor for
+                                 queries. Defaults to ``False``.
         :param bool commit: Will commit the executed statement if ``True``.
                             Defaults to ``True``.
 
         :returns: The result of ``cursor.execute()``.
+
+        :note: If both ``dict_cursor`` and ``unbuffered_cursor`` are ``True``,
+               An unbuffered cursor will be used, and the results returned will
+               be formatted as dictionaries.
         """
         self._close_cursor()
 
-        if dict_cursor:
+        if dict_cursor and unbuffered_cursor:
+            self.connection.cursorclass = pymysql.cursors.SSDictCursor
+        elif unbuffered_cursor:
+            self.connection.cursorclass = pymysql.cursors.SSCursor
+        elif dict_cursor:
             self.connection.cursorclass = pymysql.cursors.DictCursor
 
         result = self.cursor.execute(self.query, self.values)
@@ -412,7 +422,12 @@ class Model(object):
     def fetchall(self):
         """
         Fetches all the rows in the cursor.
+
+        :note: If the underlying cursor is unbuffered, PyMySQL's
+               ``fetchall_unbuffered()`` is called.
         """
+        if isinstance(self.cursor, pymysql.cursors.SSCursor):
+            return self.cursor.fetchall_unbuffered()
         return self.cursor.fetchall()
 
     def commit(self):
