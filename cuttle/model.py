@@ -381,10 +381,7 @@ class Model(object):
 
         :returns: The result of ``cursor.execute()``.
         """
-        try:
-            self._cursor.close()
-        except:
-            pass
+        self._close_cursor()
 
         if dict_cursor:
             self.connection.cursorclass = pymysql.cursors.DictCursor
@@ -502,10 +499,24 @@ class Model(object):
         :note: If model is instantiated outside of a with block, it is recommended
                to explicitly call ``close()``.
         """
+        self._close_cursor()
+        self._close_connection()
+
+    def _close_cursor(self):
+        """
+        Close the cursor, if any.
+        """
         try:
             self._cursor.close()
         except:
             pass
+        finally:
+            self._cursor = None
+
+    def _close_connection(self):
+        """
+        Close the connection, if any.
+        """
         try:
             self._connection.close()
         except:
