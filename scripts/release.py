@@ -143,7 +143,7 @@ def main():
 
     subprocess.Popen('git checkout master', shell=True)
 
-    merge_master()
+    merge_develop()
 
     git_tag(version)
 
