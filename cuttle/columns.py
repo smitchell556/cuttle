@@ -12,7 +12,7 @@ class Column(object):
     The Column class is the base class for representing a column in a table.
 
     :param name: Name of column.
-    :param data_type: Data type of column.
+    :param column_type: Data type of column.
     :param maximum: Maximum character count. Defaults to
                     ``None``.
     :param precision: Sets precision of decimal in form (M, D) where M is the
@@ -35,15 +35,15 @@ class Column(object):
            implementation will be used.
     """
 
-    def __init__(self, name, data_type, maximum=None, precision=None,
+    def __init__(self, name, column_type, maximum=None, precision=None,
                  decimal_precision=None, required=False, unique=False,
                  auto_increment=False, default=None, update=None,
                  primary_key=False):
 
         #: Contains values specifying column parameters.
         self.attributes = dict(
-            name=name,
-            data_type=data_type.upper(),
+            name=name.lower(),
+            column_type=column_type.upper(),
             maximum=maximum,
             precision=precision,
             required=required,
