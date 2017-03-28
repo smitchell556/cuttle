@@ -7,8 +7,6 @@ Here are the changes made to Cuttle for each release.
 Version 0.5.0
 -------------
 
-Minor release, unreleased
-
 - Close pre-existing cursor (if exists) in ``execute()``.
 - Add internal methods to close connection and close cursor.
 - Add ``executemany()`` method and update ``insert()``
