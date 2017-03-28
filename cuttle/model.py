@@ -350,8 +350,8 @@ class Model(object):
 
         :param bool dict_cursor: If true, results will be in a dict instead of
                                  a tuple. Defaults to ``False``.
-        :param bool dict_cursor: If true, uses an unbuffered cursor for
-                                 queries. Defaults to ``False``.
+        :param bool unbuffered_cursor: If true, uses an unbuffered cursor for
+                                       queries. Defaults to ``False``.
         :param bool commit: Will commit the executed statement if ``True``.
                             Defaults to ``True``.
 
@@ -369,6 +369,8 @@ class Model(object):
             self.connection.cursorclass = pymysql.cursors.SSCursor
         elif dict_cursor:
             self.connection.cursorclass = pymysql.cursors.DictCursor
+        else:
+            self.connection.cursorclass = pymysql.cursors.Cursor
 
         result = self.cursor.execute(self.query, self.values)
 
@@ -385,8 +387,8 @@ class Model(object):
 
         :param bool dict_cursor: If true, results will be in a dict instead of
                                  a tuple. Defaults to ``False``.
-        :param bool dict_cursor: If true, uses an unbuffered cursor for
-                                 queries. Defaults to ``False``.
+        :param bool unbuffered_cursor: If true, uses an unbuffered cursor for
+                                       queries. Defaults to ``False``.
         :param bool commit: Will commit the executed statement if ``True``.
                             Defaults to ``True``.
 
@@ -404,6 +406,8 @@ class Model(object):
             self.connection.cursorclass = pymysql.cursors.SSCursor
         elif dict_cursor:
             self.connection.cursorclass = pymysql.cursors.DictCursor
+        else:
+            self.connection.cursorclass = pymysql.cursors.Cursor
 
         result = self.cursor.executemany(self.query, self.seq_of_values)
 
