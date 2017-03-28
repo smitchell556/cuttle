@@ -11,36 +11,19 @@ import pymysql.cursors
 
 
 LEGAL_COMPARISONS = [
-    'BETWEEN',
-    'COALESCE()',
     '=',
     '<=>',
     '>',
     '>=',
-    'GREATEST()',
-    'IN()',
-    'INTERVAL()',
-    'IS',
-    'IS NOT',
-    'IS NOT NULL',
-    'ISNULL()',
-    'LEAST()',
     '<',
     '<=',
-    'LIKE',
-    'NOT BETWEEN',
     '!=',
     '<>',
-    'NOT IN()',
-    'NOT LIKE',
-    'STRCMP()'
 ]
 
 LEGAL_CONDITIONS = [
     'AND',
     '&&',
-    'NOT',
-    '!',
     'OR',
     '||',
     'XOR'
