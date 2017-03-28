@@ -15,6 +15,7 @@ Minor release, unreleased
   to accept a sequence of values.
 - Cut down the list of acceptable comparison/conditional operators used by the
   ``where()`` method.
+- Remove ``Column`` subclasses.
 
 Version 0.4.0
 -------------
