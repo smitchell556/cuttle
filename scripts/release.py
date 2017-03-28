@@ -130,7 +130,7 @@ def unreleased_changelog(release, dev):
 
 
 def main():
-    subprocess.Popen('git checkout develop', shell=True)
+    subprocess.Popen('git checkout develop', shell=True).wait()
 
     check_git_is_clean()
 
@@ -141,7 +141,7 @@ def main():
     msg = 'prepare Cuttle for {} release'.format(version)
     commit_dev(msg)
 
-    subprocess.Popen('git checkout master', shell=True)
+    subprocess.Popen('git checkout master', shell=True).wait()
 
     merge_develop()
 
@@ -149,7 +149,7 @@ def main():
 
     upload_pypi(version)
 
-    subprocess.Popen('git checkout develop', shell=True)
+    subprocess.Popen('git checkout develop', shell=True).wait()
 
     dev_version = bump_dev_version()
 
