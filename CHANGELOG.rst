@@ -16,6 +16,7 @@ Minor release, unreleased
 - Cut down the list of acceptable comparison/conditional operators used by the
   ``where()`` method.
 - Remove ``Column`` subclasses.
+- Multiple Cuttle objects connected to different databases can be created.
 
 Version 0.4.0
 -------------
