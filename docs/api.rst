@@ -30,28 +30,6 @@ Column Objects
 
 Column objects are used to in Model subclasses.
 
-The Column class is used to build all Column subclasses.
-
 .. autoclass:: Column
-   :members:
-   :inherited-members:
-
-.. autoclass:: IntColumn
-   :members:
-   :inherited-members:
-
-.. autoclass:: DecimalColumn
-   :members:
-   :inherited-members:
-
-.. autoclass:: TextColumn
-   :members:
-   :inherited-members:
-
-.. autoclass:: DateColumn
-   :members:
-   :inherited-members:
-
-.. autoclass:: DateTimeColumn
    :members:
    :inherited-members:

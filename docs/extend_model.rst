@@ -11,22 +11,22 @@ In ``cuttle_tutorial.py`` you created the following class::
 
   class TouchPool(db.Model):
       columns = [
-          IntColumn('fish_id', primary_key=True),
-          TextColumn('fish_type', required=True),
-          TextColumn('fish_name', required=True),
-          IntColumn('age', required=True),
-          TextColumn('personality')
+          Column('fish_id', 'INT', primary_key=True),
+          Column('fish_type', 'VARCHAR', required=True),
+          Column('fish_name', 'VARCHAR', required=True),
+          Column('age', 'INT', required=True),
+          Column('personality', 'VARCHAR')
       ]
 
 Now add the following method to that class so that it looks like this::
 
   class TouchPool(db.Model):
       columns = [
-          IntColumn('fish_id', primary_key=True),
-          TextColumn('fish_type', required=True),
-          TextColumn('fish_name', required=True),
-          IntColumn('age', required=True),
-          TextColumn('personality')
+          Column('fish_id', 'INT', primary_key=True),
+          Column('fish_type', 'VARCHAR', required=True),
+          Column('fish_name', 'VARCHAR', required=True),
+          Column('age', 'INT', required=True),
+          Column('personality', 'VARCHAR')
       ]
 
       def order_by(self, column, order='ASC'):
