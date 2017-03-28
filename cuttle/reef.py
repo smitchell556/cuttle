@@ -20,6 +20,8 @@ class Cuttle(object):
     :param \**kwargs: Arguments to be passed to the connection object when
                       connections are made.
 
+    :raise ValueError: If not database name is provided.
+
     :example: Instantiating Cuttle is as simple as:
 
               >>> from cuttle.home import Cuttle
@@ -28,7 +30,16 @@ class Cuttle(object):
 
     def __init__(self, sql_type, **kwargs):
         #: Holds Model class.
-        self.Model = model.Model
+        kwargs['db'] = kwargs.get('db', None) or kwargs.get('database', None)
+        if kwargs['db'] is None:
+            raise ValueError('A database must be specified')
+
+        try:
+            del kwargs['database']
+        except:
+            pass
+
+        self.Model = type(kwargs['db'], (model.Model,), {})
         self.Model._configure_model(sql_type, **kwargs)
 
     def create_db(self):

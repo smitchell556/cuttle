@@ -63,13 +63,8 @@ class Model(object):
     :note: Model should not be instantiated. Treat it like an abstract base
            class.
     """
-    #: Holds configuration values for database.
-    _config = {}
 
     def __init__(self, validate_columns=True, raise_error_on_validation=True):
-        if type(self) == Model:
-            err_msg = 'Do not make an instance of Model, make a subclass.'
-            raise TypeError(err_msg)
         #: Holds the connection to the database.
         self._connection = None
         #: Holds a cursor to the database.
@@ -96,11 +91,11 @@ class Model(object):
     @classmethod
     def _configure_model(cls, sql_type, **kwargs):
         """Configures the Model class to connect to the database."""
-        if 'db' not in kwargs and 'database' not in kwargs:
-            raise ValueError('A database name is required.')
         if sql_type.lower() == 'mysql':
-            cls._config['sql_methods'] = sql_type.lower()
-            cls._config['connection_arguments'] = kwargs
+            cls._config = dict(
+                sql_methods=sql_type.lower(),
+                connection_arguments=kwargs
+            )
         else:
             msg = "Please choose a valid sql extension"
             raise ValueError(msg)
@@ -127,19 +122,15 @@ class Model(object):
         :note: Expects the ``Model`` base class.
         """
         db_config = cls._get_config()['connection_arguments']
-        db = db_config.get('db', False) or db_config.get('database', False)
-        if not db:
-            raise ValueError('A database must be specified.')
+        db = db_config['db']
         db_config = {k: v for k, v in db_config.iteritems()
-                     if k != 'db' and k != 'database'}
+                     if k != 'db'}
 
         # Generate sql statements
         create_db = cls._generate_db(db)
         create_tbls = cls._generate_table_schema(db)
 
-        CreateDB = type('CreateDB', (cls,), {})
-
-        cdb = CreateDB()
+        cdb = cls()
         cdb._connection = pymysql.connect(**db_config)
 
         # Create database
