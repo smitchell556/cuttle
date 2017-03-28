@@ -55,9 +55,10 @@ def db_and_subclass(mysql_db_obj):
 
     class NonEmptyModel(EmptyModel):
         columns = [
-            cuttle.columns.IntColumn('test_int',
-                                     auto_increment=True,
-                                     primary_key=True)
+            cuttle.columns.Column('test_int',
+                                  'INT',
+                                  auto_increment=True,
+                                  primary_key=True)
         ]
 
     yield mysql_db_obj, EmptyModel, NonEmptyModel
