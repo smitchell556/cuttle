@@ -24,9 +24,11 @@ class Column(object):
                       Defaults to ``None``.
     :param required: Ensures column must contain a value. Defaults to ``False``.
     :param default: Sets default value of column on INSERT queries. Defaults to
-                    ``None``.
+                    ``None``. If default is a supposed to be a string in the
+                    database, the quotes must be included like "'default'".
     :param update: Sets default value of column on UPDATE queries. Defaults to
-                   ``None``.
+                   ``None``. If update is a supposed to be a string in the
+                    database, the quotes must be included like "'update'".
     :param unique: Requires values entered into column are unique. Defaults to
                    ``False``.
     :param auto_increment: Auto increments value of column on INSERT queries.
