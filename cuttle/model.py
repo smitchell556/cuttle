@@ -219,14 +219,14 @@ class Model(object):
         # add attributes
         if attr['maximum'] is not None:
             create_col.append('{}({})'.format(
-                attr['data_type'],
+                attr['column_type'],
                 attr['maximum']))
         elif attr['precision'] is not None:
             create_col.append('{}{}'.format(
-                attr['data_type'],
+                attr['column_type'],
                 attr['precision']))
         else:
-            create_col.append(attr['data_type'])
+            create_col.append(attr['column_type'])
         if attr['required']:
             create_col.append('NOT NULL')
         if attr['unique']:
