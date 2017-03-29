@@ -93,120 +93,6 @@ class Model(object):
     def __iter__(self):
         return self.cursor.__iter__()
 
-    @classmethod
-    def _configure_model(cls, sql_type, **kwargs):
-        """Configures the Model class to connect to the database."""
-        cls._sql_type = sql_type.lower()
-        if cls._sql_type == 'mysql':
-            cls._connection_arguments = kwargs
-        else:
-            msg = "Please choose a valid sql extension"
-            raise ValueError(msg)
-
-    @classmethod
-    def _create_db(cls):
-        """
-        Creates database and tables.
-        """
-        db = cls()
-        db_name = db.connection_arguments.pop('db')
-
-        # Create database
-        db._generate_db(db_name).execute()
-        db.close()
-
-        db.connection_arguments['db'] = db_name
-
-        # Create tables
-        for __ in db._generate_table():
-            db.execute()
-
-    def _generate_db(self, db):
-        """
-        Genreates the create database statement.
-
-        :param str db: The name of the database to create.
-        """
-        self.append_query('CREATE DATABASE IF NOT EXISTS {}'.format(db))
-        return self
-
-    def _generate_table(self):
-        """
-        Generates table schema.
-
-        :param str db: The name of the database to add the tables to.
-        """
-        tbl_classes = _nested_subclasses(type(self))
-
-        # construct table schema from tbl_classes columns list
-        for tbl in tbl_classes:
-            create_tbl = []
-            # table names will be all lower case based on the name of the model
-            tbl_name = tbl.__name__.lower()
-
-            if not tbl.__dict__.get('columns', False):
-                continue
-
-            tbl_columns = tbl.columns
-
-            create_tbl.append(
-                'CREATE TABLE IF NOT EXISTS {} ('.format(tbl_name))
-            p_key = None
-
-            for column in tbl_columns:
-                create_tbl.extend(self._generate_column_schema(column))
-                if column.attributes['primary_key']:
-                    p_key = column.attributes['name']
-
-            if p_key is not None:
-                create_tbl.append('PRIMARY KEY ({})'.format(p_key))
-            if create_tbl[-1][-1] == ',':
-                create_tbl[-1] = create_tbl[-1][:-1]
-
-            create_tbl.append(')')
-
-            self.append_query(' '.join(create_tbl))
-            yield
-
-    def _generate_column_schema(self, column):
-        """
-        Generates column schema.
-
-        :param obj column: A :class:`~cuttle.columns.Column` object.
-        """
-        attr = column.attributes
-
-        create_col = [
-            attr['name'].lower()
-        ]
-
-        # add attributes
-        if attr['maximum'] is not None:
-            create_col.append('{}({})'.format(
-                attr['column_type'],
-                attr['maximum']))
-        elif attr['precision'] is not None:
-            create_col.append('{}{}'.format(
-                attr['column_type'],
-                attr['precision']))
-        else:
-            create_col.append(attr['column_type'])
-        if attr['required']:
-            create_col.append('NOT NULL')
-        if attr['unique']:
-            create_col.append('UNIQUE')
-        if attr['auto_increment']:
-            create_col.append('AUTO_INCREMENT')
-        if attr['default'] is not None:
-            create_col.append(
-                'DEFAULT {}'.format(attr['default']))
-        if attr['update'] is not None:
-            create_col.append(
-                'ON UPDATE {}'.format(attr['update']))
-        create_col[-1] += ','
-
-        return create_col
-
     @property
     def name(self):
         """
@@ -270,6 +156,115 @@ class Model(object):
         Returns a sequence of values as tuples.
         """
         return [tuple(v) for v in self._values]
+
+    @classmethod
+    def _configure_model(cls, sql_type, **kwargs):
+        """Configures the Model class to connect to the database."""
+        cls._sql_type = sql_type.lower()
+        if cls._sql_type == 'mysql':
+            cls._connection_arguments = kwargs
+        else:
+            msg = "Please choose a valid sql extension"
+            raise ValueError(msg)
+
+    @classmethod
+    def _create_db(cls):
+        """
+        Creates database and tables.
+        """
+        db = cls()
+        db_name = db.connection_arguments.pop('db')
+
+        # Create database
+        db._generate_db(db_name).execute()
+        db.close()
+
+        db.connection_arguments['db'] = db_name
+
+        # Create tables
+        for tbl in _nested_subclasses(cls):
+            if tbl.__dict__.get('columns', False):
+                db._generate_table(tbl).execute()
+
+    def _generate_db(self, db):
+        """
+        Genreates the create database statement.
+
+        :param str db: The name of the database to create.
+        """
+        self.append_query('CREATE DATABASE IF NOT EXISTS {}'.format(db))
+        return self
+
+    def _generate_table(self, tbl):
+        """
+        Generates table schema.
+
+        :param class tbl: A subclass of Model.
+        """
+        create_tbl = []
+        # table names will be all lower case based on the name of the model
+        tbl_name = tbl.__name__.lower()
+
+        tbl_columns = tbl.columns
+
+        create_tbl.append(
+            'CREATE TABLE IF NOT EXISTS {} ('.format(tbl_name))
+
+        p_key = None
+
+        for column in tbl_columns:
+            create_tbl.extend(self._generate_column(column))
+            if column.attributes['primary_key']:
+                p_key = column.attributes['name']
+
+        if p_key is not None:
+            create_tbl.append('PRIMARY KEY ({})'.format(p_key))
+        if create_tbl[-1][-1] == ',':
+            create_tbl[-1] = create_tbl[-1][:-1]
+
+        create_tbl.append(')')
+
+        self.append_query(' '.join(create_tbl))
+        return self
+
+    def _generate_column(self, column):
+        """
+        Generates column schema.
+
+        :param obj column: A :class:`~cuttle.columns.Column` object.
+        """
+        attr = column.attributes
+
+        create_col = [
+            attr['name'].lower()
+        ]
+
+        # add attributes
+        if attr['maximum'] is not None:
+            create_col.append('{}({})'.format(
+                attr['column_type'],
+                attr['maximum']))
+        elif attr['precision'] is not None:
+            create_col.append('{}{}'.format(
+                attr['column_type'],
+                attr['precision']))
+        else:
+            create_col.append(attr['column_type'])
+        if attr['required']:
+            create_col.append('NOT NULL')
+        if attr['unique']:
+            create_col.append('UNIQUE')
+        if attr['auto_increment']:
+            create_col.append('AUTO_INCREMENT')
+        if attr['default'] is not None:
+            create_col.append(
+                'DEFAULT {}'.format(attr['default']))
+        if attr['update'] is not None:
+            create_col.append(
+                'ON UPDATE {}'.format(attr['update']))
+        create_col[-1] += ','
+
+        return create_col
 
     def select(self, *args):
         """
@@ -537,7 +532,7 @@ class Model(object):
         :raises ValueError: If parameters are not columns on model.
         """
         column_names = set(col.attributes['name'].lower()
-                           for col in self._get_columns())
+                           for col in self.columns)
         failed_columns = set(arg.lower() for arg in args) - column_names
 
         if self.validate_columns and failed_columns:

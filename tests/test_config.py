@@ -20,7 +20,7 @@ def test_config_values():
     }
     db = cuttle.reef.Cuttle(
         'mysql', **expected)
-    assert expected == db.Model._config['connection_arguments']
+    assert expected == db.Model._connection_arguments
 
 
 def test_invalid_sql():
@@ -44,7 +44,7 @@ def test_case_insensitive_sql_type():
     }
     db = cuttle.reef.Cuttle(
         'MYSQL', **expected)
-    assert expected == db.Model._config['connection_arguments']
+    assert expected == db.Model._connection_arguments
 
 
 def test_no_db_arg():
