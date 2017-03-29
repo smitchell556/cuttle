@@ -11,6 +11,12 @@ Minor release, unreleased
 
 - ``execute()`` and ``executemany()`` no longer close previously opened cursor,
   if any.
+- ``connection_arguments`` has been removed from ``_config`` on ``Model`` and
+  become a standalone property of the API.
+- ``connection_arguments`` are copied upon instantiation of a Model subclass,
+  which prevents modification of ``connection_arguments`` from affecting all
+  Model subclasses of the associated Cuttle objects ``Model`` property.
+
 
 Version 0.5.0
 -------------
