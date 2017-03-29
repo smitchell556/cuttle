@@ -184,6 +184,8 @@ class Model(object):
             if tbl.__dict__.get('columns', False):
                 self._generate_table(tbl).execute()
 
+        self.close()
+
     def _generate_db(self, db):
         """
         Genreates the create database statement.
