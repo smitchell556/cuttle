@@ -75,6 +75,11 @@ class Model(object):
         self._values = []
         self.validate_columns = validate_columns
         self.raise_error_on_validation = raise_error_on_validation
+        # Copy connection_arguments dict to prevent changes made on this
+        # instance from affecting all instances.
+        self._connection_arguments = {
+            k: v for k, v in self.connection_arguments.iteritems()
+        }
 
     def __del__(self):
         self.close()
@@ -91,111 +96,79 @@ class Model(object):
     @classmethod
     def _configure_model(cls, sql_type, **kwargs):
         """Configures the Model class to connect to the database."""
-        if sql_type.lower() == 'mysql':
-            cls._config = dict(
-                sql_methods=sql_type.lower(),
-                connection_arguments=kwargs
-            )
+        cls._sql_type = sql_type.lower()
+        if cls._sql_type == 'mysql':
+            cls._connection_arguments = kwargs
         else:
             msg = "Please choose a valid sql extension"
             raise ValueError(msg)
 
     @classmethod
-    def _get_config(cls):
-        """
-        Gets config dict.
-        """
-        return cls._config
-
-    @classmethod
-    def _get_columns(cls):
-        """
-        Gets Column objects of class.
-        """
-        return cls.columns
-
-    @classmethod
     def _create_db(cls):
         """
         Creates database and tables.
-
-        :note: Expects the ``Model`` base class.
         """
-        db_config = cls._get_config()['connection_arguments']
-        db = db_config['db']
-        db_config = {k: v for k, v in db_config.iteritems()
-                     if k != 'db'}
-
-        # Generate sql statements
-        create_db = cls._generate_db(db)
-        create_tbls = cls._generate_table_schema(db)
-
-        cdb = cls()
-        cdb._connection = pymysql.connect(**db_config)
+        db = cls()
+        db_name = db.connection_arguments.pop('db')
 
         # Create database
-        cdb.append_query(create_db)
-        cdb.execute()
-        cdb.cursor.close()
+        db._generate_db(db_name).execute()
+        db.close()
+
+        db.connection_arguments['db'] = db_name
 
         # Create tables
-        cdb.append_query(create_tbls)
-        cdb.execute()
+        for __ in db._generate_table():
+            db.execute()
 
-        cdb.close()
-
-    @classmethod
-    def _generate_db(cls, db):
+    def _generate_db(self, db):
         """
         Genreates the create database statement.
 
         :param str db: The name of the database to create.
         """
-        create_db = 'CREATE DATABASE IF NOT EXISTS {}'.format(db)
-        return create_db
+        self.append_query('CREATE DATABASE IF NOT EXISTS {}'.format(db))
+        return self
 
-    @classmethod
-    def _generate_table_schema(cls, db):
+    def _generate_table(self):
         """
         Generates table schema.
 
         :param str db: The name of the database to add the tables to.
         """
-        tbl_classes = _nested_subclasses(cls)
-        create_tbls = ['USE {};'.format(db)]
+        tbl_classes = _nested_subclasses(type(self))
 
         # construct table schema from tbl_classes columns list
         for tbl in tbl_classes:
+            create_tbl = []
             # table names will be all lower case based on the name of the model
             tbl_name = tbl.__name__.lower()
 
             if not tbl.__dict__.get('columns', False):
                 continue
 
-            tbl_columns = tbl._get_columns()
+            tbl_columns = tbl.columns
 
-            create_tbls.append(
+            create_tbl.append(
                 'CREATE TABLE IF NOT EXISTS {} ('.format(tbl_name))
             p_key = None
 
             for column in tbl_columns:
-                create_tbls.extend(cls._generate_column_schema(column))
+                create_tbl.extend(self._generate_column_schema(column))
                 if column.attributes['primary_key']:
                     p_key = column.attributes['name']
 
             if p_key is not None:
-                create_tbls.append('PRIMARY KEY ({})'.format(p_key))
-            if create_tbls[-1][-1] == ',':
-                create_tbls[-1] = create_tbls[-1][:-1]
+                create_tbl.append('PRIMARY KEY ({})'.format(p_key))
+            if create_tbl[-1][-1] == ',':
+                create_tbl[-1] = create_tbl[-1][:-1]
 
-            create_tbls.append(');')
+            create_tbl.append(')')
 
-        create_tbls = ' '.join(create_tbls)
+            self.append_query(' '.join(create_tbl))
+            yield
 
-        return create_tbls
-
-    @staticmethod
-    def _generate_column_schema(column):
+    def _generate_column_schema(self, column):
         """
         Generates column schema.
 
@@ -233,6 +206,70 @@ class Model(object):
         create_col[-1] += ','
 
         return create_col
+
+    @property
+    def name(self):
+        """
+        Returns the table name which can be used for writing queries.
+        """
+        return type(self).__name__.lower()
+
+    @property
+    def connection_arguments(self):
+        """
+        Returns the connection arguments that are passed to the connection
+        object.
+        """
+        return self._connection_arguments
+
+    @property
+    def connection(self):
+        """
+        Returns a connection to the database. Creates a connection if one hasn't
+        already been made.
+
+        Use :func:`~cuttle.home.Model.close` to close the connection.
+        """
+        try:
+            self._connection.ping()
+        except:
+            connection_arguments = self._get_config()['connection_arguments']
+            self._connection = pymysql.connect(**connection_arguments)
+        return self._connection
+
+    @property
+    def cursor(self):
+        """
+        Returns a cursor to the database. The cursor must be closed explicitly
+        before a new one will be made.
+
+        :note: A connection will automatically be made to the database before
+               creating a cursor.
+        """
+        if self._cursor is None or self._cursor.connection is None:
+            self._cursor = self.connection.cursor()
+        return self._cursor
+
+    @property
+    def query(self):
+        """
+        Returns the current query string.
+        """
+        return ' '.join(self._query)
+
+    @property
+    def values(self):
+        """
+        Returns the values as a tuple.
+        """
+        return tuple(self._values)
+
+    @property
+    def seq_of_values(self):
+        """
+        Returns a sequence of values as tuples.
+        """
+        return [tuple(v) for v in self._values]
 
     def select(self, *args):
         """
@@ -549,62 +586,6 @@ class Model(object):
             self._connection.close()
         except:
             pass
-
-    @property
-    def name(self):
-        """
-        Returns the table name which can be used for writing queries.
-        """
-        return type(self).__name__.lower()
-
-    @property
-    def connection(self):
-        """
-        Returns a connection to the database. Creates a connection if one hasn't
-        already been made.
-
-        Use :func:`~cuttle.home.Model.close` to close the connection.
-        """
-        try:
-            self._connection.ping()
-        except:
-            connection_arguments = self._get_config()['connection_arguments']
-            self._connection = pymysql.connect(**connection_arguments)
-        return self._connection
-
-    @property
-    def cursor(self):
-        """
-        Returns a cursor to the database. The cursor must be closed explicitly
-        before a new one will be made.
-
-        :note: A connection will automatically be made to the database before
-               creating a cursor.
-        """
-        if self._cursor is None or self._cursor.connection is None:
-            self._cursor = self.connection.cursor()
-        return self._cursor
-
-    @property
-    def query(self):
-        """
-        Returns the current query string.
-        """
-        return ' '.join(self._query)
-
-    @property
-    def values(self):
-        """
-        Returns the values as a tuple.
-        """
-        return tuple(self._values)
-
-    @property
-    def seq_of_values(self):
-        """
-        Returns a sequence of values as tuples.
-        """
-        return [tuple(v) for v in self._values]
 
 
 def _nested_subclasses(cls):
