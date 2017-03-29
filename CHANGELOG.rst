@@ -9,6 +9,9 @@ Version 0.6.0
 
 Minor release, unreleased
 
+- ``execute()`` and ``executemany()`` no longer close previously opened cursor,
+  if any.
+
 Version 0.5.0
 -------------
 
