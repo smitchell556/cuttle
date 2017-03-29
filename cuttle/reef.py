@@ -46,4 +46,4 @@ class Cuttle(object):
         """
         Creates database.
         """
-        self.Model._create_db()
+        self.Model()._create_db()

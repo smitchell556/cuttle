@@ -167,24 +167,22 @@ class Model(object):
             msg = "Please choose a valid sql extension"
             raise ValueError(msg)
 
-    @classmethod
-    def _create_db(cls):
+    def _create_db(self):
         """
         Creates database and tables.
         """
-        db = cls()
-        db_name = db.connection_arguments.pop('db')
+        db_name = self.connection_arguments.pop('db')
 
         # Create database
-        db._generate_db(db_name).execute()
-        db.close()
+        self._generate_db(db_name).execute()
+        self.close()
 
-        db.connection_arguments['db'] = db_name
+        self.connection_arguments['db'] = db_name
 
         # Create tables
-        for tbl in _nested_subclasses(cls):
+        for tbl in _nested_subclasses(type(self)):
             if tbl.__dict__.get('columns', False):
-                db._generate_table(tbl).execute()
+                self._generate_table(tbl).execute()
 
     def _generate_db(self, db):
         """
