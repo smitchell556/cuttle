@@ -393,8 +393,6 @@ class Model(object):
                An unbuffered cursor will be used, and the results returned will
                be formatted as dictionaries.
         """
-        self._close_cursor()
-
         if dict_cursor and unbuffered_cursor:
             self.connection.cursorclass = pymysql.cursors.SSDictCursor
         elif unbuffered_cursor:
@@ -430,8 +428,6 @@ class Model(object):
                An unbuffered cursor will be used, and the results returned will
                be formatted as dictionaries.
         """
-        self._close_cursor()
-
         if dict_cursor and unbuffered_cursor:
             self.connection.cursorclass = pymysql.cursors.SSDictCursor
         elif unbuffered_cursor:
