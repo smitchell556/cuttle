@@ -5,7 +5,7 @@ This module contains the Cuttle class which is the central unit for working
 with Cuttle.
 
 """
-import model
+from cuttle.model import Model
 
 
 class Cuttle(object):
@@ -39,7 +39,7 @@ class Cuttle(object):
         except:
             pass
 
-        self.Model = type(kwargs['db'], (model.Model,), {})
+        self.Model = type(kwargs['db'], (Model,), {})
         self.Model._configure_model(sql_type, **kwargs)
 
     def create_db(self):
