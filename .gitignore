@@ -5,7 +5,9 @@
 .cache/
 .eggs/
 .tox/
+
 build/
+db_credentials/
 dist/
 docs/_build/
 venv/
