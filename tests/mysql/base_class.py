@@ -1,11 +1,12 @@
 # -*- coding: utf-8
 """
-This module contains a TestCase subclass to build fixtures off of.
+This module contains TestCase subclasses to build fixtures off of.
 """
 import unittest
 
 import pymysql.cursors
 from cuttle.reef import Cuttle
+from cuttle.model import Model
 
 from mysql_credentials import USER, PASSWD
 
@@ -42,3 +43,16 @@ class DbObject(unittest.TestCase):
         cur.close()
 
         self.con.close()
+
+
+class ModelObject(unittest.TestCase):
+
+    def setUp(self):
+        self.Model = Model
+        self.Model._configure_model(
+            'mysql', user=USER, passwd=PASSWD, host=HOST)
+        self.model = Model()
+
+    def tearDown(self):
+        del self.model
+        self.Model = None

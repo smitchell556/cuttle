@@ -1,15 +1,18 @@
 # -*- coding: utf-8
 """
-Tests related to creating databases.
+Tests related to the Cuttle class.
 """
+import unittest
+
 import pymysql
 
+from cuttle.reef import Cuttle
 from cuttle.columns import Column
 
 from base_class import DbObject, DB, DB2
 
 
-class CuttleInstanceTestCase(DbObject):
+class CuttleCreateDbTestCase(DbObject):
 
     def test_create_db_no_table(self):
         self.db.create_db()
