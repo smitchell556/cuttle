@@ -325,7 +325,7 @@ class Model(object):
         kwargs = self.columns_lower(**kwargs)
         if self.check_columns(*tuple(key for key in kwargs.keys())):
             columns, values = [], []
-            for key, value in kwargs.iteritems():
+            for key, value in kwargs.items():
                 columns.append(key)
                 values.append(value)
 
@@ -516,7 +516,7 @@ class Model(object):
         if args:
             return tuple(arg.lower() for arg in args)
         elif kwargs:
-            return {key.lower(): value for key, value in kwargs.iteritems()}
+            return {key.lower(): value for key, value in kwargs.items()}
         else:
             raise ValueError("columns_lower must receive input of either args "
                              "or kwargs")
