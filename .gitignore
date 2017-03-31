@@ -1,13 +1,14 @@
 *.pyc
 .coverage
 
+tests/**/*_credentials.py
+
 *.egg-info/
 .cache/
 .eggs/
 .tox/
 
 build/
-db_credentials/
 dist/
 docs/_build/
 venv/
