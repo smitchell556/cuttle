@@ -318,9 +318,10 @@ class Model(object):
         :param dict \**kwargs: The values to be updated in the table where the
                                key is the column.
 
+        :raises ValueError: If no column value pairs passed in.
         """
         if not kwargs:
-            raise ValueError('arguments required to update table')
+            raise ValueError('column value pairsn required to update table')
 
         kwargs = self.columns_lower(**kwargs)
         if self.check_columns(*tuple(key for key in kwargs.keys())):
@@ -351,8 +352,12 @@ class Model(object):
         :param \**kwargs: Key value pairs where the keys are the columns of the
                           table.
 
-        :raises ValueError: If condition or comparison operator is invalid.
+        :raises ValueError: If condition or comparison operator is invalid. If
+                            no column value pairs passed in.
         """
+        if not kwargs:
+            raise ValueError('column value pairs required for WHERE clause')
+
         condition = condition.upper()
         comparison = comparison.upper()
         if condition not in LEGAL_CONDITIONS or comparison not in LEGAL_COMPARISONS:
