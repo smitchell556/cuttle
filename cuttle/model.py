@@ -295,7 +295,8 @@ class Model(object):
                             list of lists/tuples which would be used with
                             :func:`~cuttle.model.Model.executemany`.
         """
-        columns = self.columns_lower(*tuple(columns))
+        if columns:
+            columns = self.columns_lower(*tuple(columns))
         if self.check_columns(*columns):
             q = ['INSERT INTO {}'.format(self.name)]
 
