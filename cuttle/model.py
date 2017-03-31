@@ -367,7 +367,7 @@ class Model(object):
         kwargs = self.columns_lower(**kwargs)
         if self.check_columns(*tuple(key for key in kwargs.keys())):
             columns, values = [], []
-            for key, value in kwargs.iteritems():
+            for key, value in kwargs.items():
                 columns.append(key)
                 values.append(value)
 
