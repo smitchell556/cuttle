@@ -78,7 +78,7 @@ class Model(object):
         # Copy connection_arguments dict to prevent changes made on this
         # instance from affecting all instances.
         self._connection_arguments = {
-            k: v for k, v in self.connection_arguments.iteritems()
+            k: v for k, v in self.connection_arguments.items()
         }
 
     def __del__(self):
@@ -119,8 +119,7 @@ class Model(object):
         try:
             self._connection.ping()
         except:
-            connection_arguments = self._get_config()['connection_arguments']
-            self._connection = pymysql.connect(**connection_arguments)
+            self._connection = pymysql.connect(**self.connection_arguments)
         return self._connection
 
     @property
@@ -175,9 +174,9 @@ class Model(object):
 
         # Create database
         self._generate_db(db_name).execute()
-        self.close()
 
         self.connection_arguments['db'] = db_name
+        self.connection.select_db(db_name)
 
         # Create tables
         for tbl in _nested_subclasses(type(self)):
