@@ -319,6 +319,9 @@ class Model(object):
                                key is the column.
 
         """
+        if not kwargs:
+            raise ValueError('arguments required to update table')
+
         kwargs = self.columns_lower(**kwargs)
         if self.check_columns(*tuple(key for key in kwargs.keys())):
             columns, values = [], []
