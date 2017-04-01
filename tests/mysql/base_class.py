@@ -6,6 +6,7 @@ import unittest
 
 import pymysql.cursors
 from cuttle.reef import Cuttle
+from cuttle.columns import Column
 from cuttle.model import Model
 
 from mysql_credentials import USER, PASSWD
@@ -56,3 +57,24 @@ class ModelObject(unittest.TestCase):
     def tearDown(self):
         del self.model
         self.Model = None
+
+
+class DbAndSubclassObject(DbObject):
+
+    def setUp(self):
+        super(DbAndSubclassObject, self).setUp()
+
+        class TestTable(self.db.Model):
+            columns = [Column('c1', 'INT'),
+                       Column('c2', 'VARCHAR', maximum=16)]
+
+        self.TestTable = TestTable
+
+        self.db.create_db()
+
+        self.con.select_db(self.db.Model._connection_arguments['db'])
+
+    def tearDown(self):
+        del self.TestTable
+
+        super(DbAndSubclassObject, self).tearDown()
