@@ -2,11 +2,8 @@
 """
 Tests related to the Cuttle class.
 """
-import unittest
-
 import pymysql
 
-from cuttle.reef import Cuttle
 from cuttle.columns import Column
 
 from base_class import DbObject, DB, DB2
