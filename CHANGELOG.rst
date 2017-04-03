@@ -16,6 +16,8 @@ Minor release, unreleased
 - ``connection_arguments`` are copied upon instantiation of a Model subclass,
   which prevents modification of ``connection_arguments`` from affecting all
   Model subclasses of the associated Cuttle objects ``Model`` property.
+- Test suite is completely redone using tox and unittest. Test suite is expanded
+  to better encompass all methods.
 
 
 Version 0.5.0
