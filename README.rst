@@ -89,7 +89,12 @@ Running the tests
 Tests can be run using tox with the command ``tox <sql>`` to run tests that
 require a connection to a database, where ``<sql>`` is the specific
 implementation desired for testing (such as ``mysql``), or ``tox ambiguous`` to
-run tests that do not require a connection to a database.
+run tests that do not require a connection to a database. If the tests require
+user credentials, create a file ``<sql>_credentials.py`` with the appropriate
+variables in the corresponding test directory, where ``<sql>`` is the specific
+implementation desired for testing. For example, to run ``tox mysql``,
+``USER`` and ``PASSWD`` variables must be placed in a file called
+``mysql_credentials.py`` under the ``tests/mysql/`` directory.
 
 Where can I get help?
 ---------------------
