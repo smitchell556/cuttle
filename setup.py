@@ -37,5 +37,5 @@ setup(name='cuttle',
       keywords='sql mysql orm',
       packages=find_packages(),
       include_package_data=True,
-      install_requires=['PyMySQL'],
+      install_requires=['cuttlepool'],
       )
