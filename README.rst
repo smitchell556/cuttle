@@ -75,16 +75,30 @@ MySQL.
 The intent is to extend Cuttle to support every SQL implementation, but for the
 near future the above mentioned implementations will be the focus of attention.
 
-How can I contribute?
----------------------
+Contributing
+------------
 
-For the time being, this project won't be accepting outside contributions. It's
-very much in it's infancy and the API can change drastically at any time. Once
-the project has become more stable, contributions from the community will be
-more than welcome. Just hold tight while Cuttle finds it's identity.
+It's highly recommended to develop in a virtualenv.
+
+Clone the repository::
+
+  git clone https://github.com/smitchell556/cuttle.git
+
+Install the package in editable mode::
+
+  cd cuttle
+  pip install -e .
+
+Now you're set. See the next section for running tests.
+
+Please work off the ``develop`` branch. Better yet, create a new branch from
+``develop`` and merge it back into ``develop`` when functional and passing
+tests.
 
 Running the tests
 -----------------
+
+To run the tests, tox will need to be installed with ``pip install tox``.
 
 Tests can be run using tox with the command ``tox <sql>`` to run tests that
 require a connection to a database, where ``<sql>`` is the specific
