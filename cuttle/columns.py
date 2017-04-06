@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 """
+This module contains the Column class for specifying table columns.
 
-This module contains the Column base class and subsequent derived classes
-for specifying table columns.
-
+:license: MIT, see LICENSE for details.
 """
 
 

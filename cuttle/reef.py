@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-
 This module contains the Cuttle class which is the central unit for working
 with Cuttle.
 
+:license: MIT, see LICENSE for details.
 """
 from cuttle.model import Model
 

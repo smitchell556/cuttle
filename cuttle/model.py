@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-
 This module contains the Model class which is used to make querys on the
 database.
 
+:license: MIT, see LICENSE for details.
 """
 import warnings
 

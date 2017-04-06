@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-
 Cuttle, the simple, extendable ORM.
 
+:license: MIT, see LICENSE for details.
 """
 
 
