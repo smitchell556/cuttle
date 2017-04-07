@@ -10,27 +10,6 @@ from cuttle.model import Model
 from base_class import ModelObject, ModelSubclassObject
 
 
-class ModelInstanceTestCase(unittest.TestCase):
-
-    def test_model_connection_arguments_copy(self):
-        Model._configure_model('mysql', db='db')
-
-        class SubModel(Model):
-            pass
-
-        sm = SubModel()
-
-        self.assertEqual(SubModel._connection_arguments,
-                         sm.connection_arguments)
-        self.assertNotEqual(id(SubModel._connection_arguments),
-                            id(sm.connection_arguments))
-
-        sm.connection_arguments['db'] = 'different_db'
-
-        self.assertNotEqual(SubModel._connection_arguments,
-                            sm.connection_arguments)
-
-
 class ModelNamePropertyTestCase(unittest.TestCase):
 
     def test_model_name_lower(self):
@@ -63,7 +42,6 @@ class ModelConfigurationTestCase(unittest.TestCase):
         Model._configure_model('MySQL', db='db')
 
         self.assertEqual(Model._sql_type, 'mysql')
-        self.assertEqual(dict(db='db'), Model._connection_arguments)
 
     def test_configure_model_improper_sql(self):
         with self.assertRaises(ValueError):

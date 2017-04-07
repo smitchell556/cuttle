@@ -72,7 +72,7 @@ class DbAndSubclassObject(DbObject):
 
         self.db.create_db()
 
-        self.con.select_db(self.db.Model._connection_arguments['db'])
+        self.con.select_db(DB)
 
     def tearDown(self):
         del self.TestTable

@@ -4,6 +4,7 @@ Tests related to the Model class.
 """
 import pymysql.connections
 import pymysql.cursors
+from cuttlepool.cuttlepool import PoolConnection
 
 from base_class import DbAndSubclassObject, ModelObject, DB
 
@@ -13,12 +14,13 @@ class ModelConnectionTestCase(ModelObject):
     def test_connection_property(self):
         # Test connection object created
         self.assertTrue(isinstance(self.model.connection,
-                                   pymysql.connections.Connection))
+                                   PoolConnection))
         self.assertTrue(self.model.connection.open)
 
         # Close connection
         self.model._connection.close()
-        self.assertFalse(self.model._connection.open)
+        with self.assertRaises(AttributeError):
+            self.model._connection.open
 
         # Test connection is reopened when connection property is accessed
         self.assertTrue(self.model.connection.open)
@@ -39,7 +41,7 @@ class ModelConnectionTestCase(ModelObject):
     def test_close(self):
         # Test connection object created
         self.assertTrue(isinstance(self.model.connection,
-                                   pymysql.connections.Connection))
+                                   PoolConnection))
         self.assertTrue(self.model.connection.open)
 
         # Test cursor object created
@@ -48,7 +50,8 @@ class ModelConnectionTestCase(ModelObject):
 
         # Call close method
         self.model.close()
-        self.assertFalse(self.model._connection.open)
+        with self.assertRaises(AttributeError):
+            self.model._connection.open
         self.assertIsNone(self.model._cursor)
 
     def test_close_cursor(self):
@@ -63,12 +66,13 @@ class ModelConnectionTestCase(ModelObject):
     def test_close_connection(self):
         # Test connection object created
         self.assertTrue(isinstance(self.model.connection,
-                                   pymysql.connections.Connection))
+                                   PoolConnection))
         self.assertTrue(self.model.connection.open)
 
         # Close connection
         self.model._close_connection()
-        self.assertFalse(self.model._connection.open)
+        with self.assertRaises(AttributeError):
+            self.model._connection.open
 
 
 class ModelExecuteTestCase(DbAndSubclassObject):

@@ -7,7 +7,8 @@ database.
 """
 import warnings
 
-import pymysql.cursors
+from cuttlepool import CuttlePool
+from pymysql.cursors import Cursor, DictCursor, SSCursor, SSDictCursor
 
 
 LEGAL_COMPARISONS = [
@@ -75,11 +76,6 @@ class Model(object):
         self._values = []
         self.validate_columns = validate_columns
         self.raise_error_on_validation = raise_error_on_validation
-        # Copy connection_arguments dict to prevent changes made on this
-        # instance from affecting all instances.
-        self._connection_arguments = {
-            k: v for k, v in self.connection_arguments.items()
-        }
 
     def __del__(self):
         self.close()
@@ -101,25 +97,17 @@ class Model(object):
         return type(self).__name__.lower()
 
     @property
-    def connection_arguments(self):
-        """
-        Returns the connection arguments that are passed to the connection
-        object.
-        """
-        return self._connection_arguments
-
-    @property
     def connection(self):
         """
-        Returns a connection to the database. Creates a connection if one hasn't
-        already been made.
+        Returns a connection to the database. Gets a connection from the
+        connection pool if it doesn't already have one.
 
         Use :func:`~cuttle.home.Model.close` to close the connection.
         """
         try:
             self._connection.ping()
         except:
-            self._connection = pymysql.connect(**self.connection_arguments)
+            self._connection = self._pool.get_connection()
         return self._connection
 
     @property
@@ -161,7 +149,7 @@ class Model(object):
         """Configures the Model class to connect to the database."""
         cls._sql_type = sql_type.lower()
         if cls._sql_type == 'mysql':
-            cls._connection_arguments = kwargs
+            cls._pool = CuttlePool(**kwargs)
         else:
             msg = "Please choose a valid sql extension"
             raise ValueError(msg)
@@ -170,16 +158,22 @@ class Model(object):
         """
         Creates database and tables.
         """
-        db_name = self.connection_arguments.pop('db')
+        # copy connection arguments
+        connection_arguments = {
+            k: v for k, v in self._pool._connection_arguments.items()
+        }
+        db_name = connection_arguments.pop('db')
+
+        throwaway_pool = CuttlePool(**connection_arguments)
+        self._connection = throwaway_pool.get_connection()
 
         # Create database
         self._generate_db(db_name).execute()
 
-        self.connection_arguments['db'] = db_name
         self.connection.select_db(db_name)
 
         # Create tables
-        for tbl in _nested_subclasses(type(self)):
+        for tbl in set(_nested_subclasses(type(self))):
             if tbl.__dict__.get('columns', False):
                 self._generate_table(tbl).execute()
 
@@ -402,13 +396,13 @@ class Model(object):
                be formatted as dictionaries.
         """
         if dict_cursor and unbuffered_cursor:
-            self.connection.cursorclass = pymysql.cursors.SSDictCursor
+            self.connection.cursorclass = SSDictCursor
         elif unbuffered_cursor:
-            self.connection.cursorclass = pymysql.cursors.SSCursor
+            self.connection.cursorclass = SSCursor
         elif dict_cursor:
-            self.connection.cursorclass = pymysql.cursors.DictCursor
+            self.connection.cursorclass = DictCursor
         else:
-            self.connection.cursorclass = pymysql.cursors.Cursor
+            self.connection.cursorclass = Cursor
 
         result = self.cursor.execute(self.query, self.values)
 
@@ -437,13 +431,13 @@ class Model(object):
                be formatted as dictionaries.
         """
         if dict_cursor and unbuffered_cursor:
-            self.connection.cursorclass = pymysql.cursors.SSDictCursor
+            self.connection.cursorclass = SSDictCursor
         elif unbuffered_cursor:
-            self.connection.cursorclass = pymysql.cursors.SSCursor
+            self.connection.cursorclass = SSCursor
         elif dict_cursor:
-            self.connection.cursorclass = pymysql.cursors.DictCursor
+            self.connection.cursorclass = DictCursor
         else:
-            self.connection.cursorclass = pymysql.cursors.Cursor
+            self.connection.cursorclass = Cursor
 
         result = self.cursor.executemany(self.query, self.seq_of_values)
 
@@ -475,7 +469,7 @@ class Model(object):
         :note: If the underlying cursor is unbuffered, PyMySQL's
                ``fetchall_unbuffered()`` is called.
         """
-        if isinstance(self.cursor, pymysql.cursors.SSCursor):
+        if isinstance(self.cursor, SSCursor):
             return self.cursor.fetchall_unbuffered()
         return self.cursor.fetchall()
 
