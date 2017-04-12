@@ -18,6 +18,8 @@ Minor release, unreleased
   Model subclasses of the associated Cuttle objects ``Model`` property.
 - Test suite is completely redone using tox and unittest. Test suite is expanded
   to better encompass all methods.
+- Switched connection implementation to `Cuttle Pool
+  <https://github.com/smitchell556/cuttlepool>`_.
 
 
 Version 0.5.0
