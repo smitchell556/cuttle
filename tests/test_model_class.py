@@ -36,70 +36,38 @@ class ModelValuesTestCase(ModelObject):
         self.assertEqual([('test',), ('values',)], self.model.seq_of_values)
 
 
-class ModelConfigurationTestCase(unittest.TestCase):
-
-    def test_configure_model_mysql(self):
-        Model._configure_model('MySQL', db='db')
-
-        self.assertEqual(Model._sql_type, 'mysql')
-
-    def test_configure_model_improper_sql(self):
-        with self.assertRaises(ValueError):
-            Model._configure_model('toxicsql', db='db')
-
-
-class ModelGenerateDbTestCase(ModelObject):
-
-    def test_generate_db(self):
-        self.model._generate_db('db')
-        self.assertEqual(self.model._query, [
-                         'CREATE DATABASE IF NOT EXISTS db'])
-
-    def test_generate_table(self):
-        class TestTable(self.Model):
-            columns = [Column('c1', 'INT')]
-
-        self.model._generate_table(TestTable)
-        self.assertEqual(self.model._query,
-                         ['CREATE TABLE IF NOT EXISTS testtable ( c1 INT )'])
-
-    def test_generate_column(self):
-        self.assertEqual(self.model._generate_column(Column('c1', 'INT')),
-                         ['c1', 'INT,'])
-
-
 class ModelSelectTestCase(ModelSubclassObject):
 
     def test_select_no_args(self):
         self.testtable.select()
-        self.assertEqual(['SELECT * FROM testtable'],
-                         self.testtable._query)
+        self.assertEqual('SELECT * FROM testtable',
+                         self.testtable.query)
 
     def test_select_args(self):
         self.testtable.select('c1')
-        self.assertEqual(['SELECT c1 FROM testtable'],
-                         self.testtable._query)
+        self.assertEqual('SELECT c1 FROM testtable',
+                         self.testtable.query)
 
 
 class ModelInsertTestCase(ModelSubclassObject):
 
     def test_insert_no_args(self):
         self.testtable.insert()
-        self.assertEqual(['INSERT INTO testtable () VALUES ()'],
-                         self.testtable._query)
-        self.assertEqual([], self.testtable._values)
+        self.assertEqual('INSERT INTO testtable () VALUES ()',
+                         self.testtable.query)
+        self.assertEqual(tuple(), self.testtable.values)
 
     def test_insert_args(self):
         self.testtable.insert(['c1'], [1])
-        self.assertEqual(['INSERT INTO testtable (c1) VALUES (%s)'],
-                         self.testtable._query)
-        self.assertEqual([1], self.testtable._values)
+        self.assertEqual('INSERT INTO testtable (c1) VALUES (%s)',
+                         self.testtable.query)
+        self.assertEqual((1,), self.testtable.values)
 
     def test_insert_many_args(self):
         self.testtable.insert(['c1'], [[1], [2]])
-        self.assertEqual(['INSERT INTO testtable (c1) VALUES (%s)'],
-                         self.testtable._query)
-        self.assertEqual([[1], [2]], self.testtable._values)
+        self.assertEqual('INSERT INTO testtable (c1) VALUES (%s)',
+                         self.testtable.query)
+        self.assertEqual([(1,), (2,)], self.testtable.seq_of_values)
 
 
 class ModelUpdateTestCase(ModelSubclassObject):
@@ -110,16 +78,16 @@ class ModelUpdateTestCase(ModelSubclassObject):
 
     def test_update_args(self):
         self.testtable.update(c1=1)
-        self.assertEqual(['UPDATE testtable SET c1=%s'],
-                         self.testtable._query)
-        self.assertEqual([1], self.testtable._values)
+        self.assertEqual('UPDATE testtable SET c1=%s',
+                         self.testtable.query)
+        self.assertEqual((1,), self.testtable.values)
 
 
 class ModelDeleteTestCase(ModelSubclassObject):
 
     def test_delete(self):
         self.testtable.delete()
-        self.assertEqual(['DELETE FROM testtable'], self.testtable._query)
+        self.assertEqual('DELETE FROM testtable', self.testtable.query)
 
 
 class ModelWhereTestCase(ModelSubclassObject):
@@ -130,29 +98,33 @@ class ModelWhereTestCase(ModelSubclassObject):
 
     def test_where_single_args(self):
         self.testtable.where(c1=1)
-        self.assertEqual(['WHERE c1=%s'], self.testtable._query)
-        self.assertEqual([1], self.testtable._values)
+        self.assertEqual('WHERE c1=%s', self.testtable.query)
+        self.assertEqual((1,), self.testtable.values)
 
     def test_where_multiple_args(self):
         self.testtable.where(c1=1, c2=2)
         try:
-            self.assertEqual(['WHERE c1=%s AND c2=%s'],
-                             self.testtable._query)
+            self.assertEqual('WHERE c1=%s AND c2=%s',
+                             self.testtable.query)
+            try:
+                self.assertItemsEqual((1, 2), self.testtable.values)
+            except AttributeError:
+                self.assertCountEqual((1, 2), self.testtable.values)
         except:
-            self.assertEqual(['WHERE c2=%s AND c1=%s'],
-                             self.testtable._query)
-        try:
-            self.assertItemsEqual([1, 2], self.testtable._values)
-        except AttributeError:
-            self.assertCountEqual([1, 2], self.testtable._values)
+            self.assertEqual('WHERE c2=%s AND c1=%s',
+                             self.testtable.query)
+            try:
+                self.assertItemsEqual((2, 1), self.testtable.values)
+            except AttributeError:
+                self.assertCountEqual((2, 1), self.testtable.values)
 
     def test_multiple_where(self):
         self.testtable.where(c1=1).where(condition='or', comparison='<', c2=2)
-        self.assertEqual(['WHERE c1=%s', 'OR c2<%s'], self.testtable._query)
+        self.assertEqual('WHERE c1=%s OR c2<%s', self.testtable.query)
         try:
-            self.assertItemsEqual([1, 2], self.testtable._values)
+            self.assertItemsEqual((1, 2), self.testtable.values)
         except AttributeError:
-            self.assertCountEqual([1, 2], self.testtable._values)
+            self.assertCountEqual((1, 2), self.testtable.values)
 
     def test_where_wrong_condition(self):
         with self.assertRaises(ValueError):
@@ -168,7 +140,7 @@ class ModelAppendQueryTestCase(ModelSubclassObject):
     def test_append_query(self):
         self.testtable.append_query('query')
 
-        self.assertEqual(['query'], self.testtable._query)
+        self.assertEqual('query', self.testtable.query)
 
 
 class ModelExtendValuesTestCase(ModelSubclassObject):
@@ -176,13 +148,13 @@ class ModelExtendValuesTestCase(ModelSubclassObject):
     def test_extend_values_list(self):
         self.testtable.extend_values(['val1', 'val2'])
 
-        self.assertEqual(['val1', 'val2'], self.testtable._values)
+        self.assertEqual(('val1', 'val2'), self.testtable.values)
 
     def test_extend_values_list_of_lists(self):
         self.testtable.extend_values([['val1', 'val2'], ['val3', 'val4']])
 
-        self.assertEqual([['val1', 'val2'], ['val3', 'val4']],
-                         self.testtable._values)
+        self.assertEqual([('val1', 'val2'), ('val3', 'val4')],
+                         self.testtable.seq_of_values)
 
 
 class ModelColumnsLowerTestCase(ModelSubclassObject):
@@ -225,10 +197,10 @@ class ModelCheckColumnsTestCase(ModelSubclassObject):
 class ModelResetQuery(ModelSubclassObject):
 
     def test_reset_query(self):
-        self.testtable._query.append(1)
-        self.testtable._values.append(1)
+        self.testtable.append_query(1)
+        self.testtable.extend_values([1])
 
         self.testtable.reset_query()
 
-        self.assertEqual([], self.testtable._query)
-        self.assertEqual([], self.testtable._values)
+        self.assertEqual('', self.testtable.query)
+        self.assertEqual(tuple(), self.testtable.values)
