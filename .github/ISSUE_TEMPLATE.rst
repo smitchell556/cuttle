@@ -3,27 +3,5 @@ the issue tracker to see if your issue has already been filed? Have you read the
 documentation to make sure you understand the expected behavior? If you just
 have a question, please head over to the mail list at
 https://groups.google.com/forum/#!forum/cuttle. If none of the above apply,
-please file an issue.
-
-Expected behavior
------------------
-
-
-
-Actual behavior
----------------
-
-
-
-How to reproduce the problem
-----------------------------
-
-
-
-Specifications (version, OS, etc.)
-----------------------------------
-
-
-
-Additional details you think are pertinent
-------------------------------------------
+please file an issue including pertinent information to replicate and
+diagnose.
