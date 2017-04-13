@@ -62,15 +62,15 @@ What Cuttle can do
 
 Cuttle can create databases and perform basic SELECT, INSERT, UPDATE, and DELETE
 queries. What makes Cuttle different is the ability to write custom queries on
-models.
+models. Cuttle also uses connection pooling through `Cuttle Pool
+<https://github.com/smitchell556/cuttlepool>`_
 
 What features are planned?
 --------------------------
 
 Besides including support for SQLite and PostgreSQL, the future includes
-connection pooling and support for modifying database schema. Work on
-supporting SQLite and PostgreSQL will begin once the API becomes stable for
-MySQL.
+support for modifying database schema. Work on supporting SQLite and PostgreSQL
+will begin once the API becomes stable for MySQL.
 
 The intent is to extend Cuttle to support every SQL implementation, but for the
 near future the above mentioned implementations will be the focus of attention.
