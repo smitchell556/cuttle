@@ -5,6 +5,7 @@ with Cuttle.
 
 :license: MIT, see LICENSE for details.
 """
+from cuttle.columns import Column
 from cuttle.model import Model
 
 
