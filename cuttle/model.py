@@ -557,7 +557,6 @@ class Model(object):
         :note: If model is instantiated outside of a with block, it is recommended
                to explicitly call ``close()``.
         """
-        self._close_cursor()
         self._close_connection()
 
     def _close_cursor(self):
@@ -575,6 +574,7 @@ class Model(object):
         """
         Close the connection, if any.
         """
+        self._close_cursor()
         try:
             self._connection.close()
         except:
