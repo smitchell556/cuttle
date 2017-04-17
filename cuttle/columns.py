@@ -29,15 +29,16 @@ class Column(object):
                    ``False``.
     :param auto_increment: Auto increments value of column on INSERT queries.
                            Defaults to ``False``.
+    :param primary_key: Signifies column as primary key of table. Defaults to
+                        ``False``.
 
     :note: If an attribute is not specified, then the default of the SQL
            implementation will be used.
     """
 
     def __init__(self, name, column_type, maximum=None, precision=None,
-                 decimal_precision=None, required=False, unique=False,
-                 auto_increment=False, default=None, update=None,
-                 primary_key=False):
+                 required=False, unique=False, auto_increment=False,
+                 default=None, update=None, primary_key=False):
 
         #: Contains values specifying column parameters.
         self.attributes = dict(
