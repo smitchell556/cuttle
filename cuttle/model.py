@@ -315,7 +315,7 @@ class Model(object):
         :raises ValueError: If no column value pairs passed in.
         """
         if not kwargs:
-            raise ValueError('column value pairsn required to update table')
+            raise ValueError('column value pairs required to update table')
 
         kwargs = self.columns_lower(**kwargs)
         if self.check_columns(*tuple(key for key in kwargs.keys())):
