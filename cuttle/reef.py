@@ -6,7 +6,7 @@ with Cuttle.
 :license: MIT, see LICENSE for details.
 """
 from cuttle.columns import Column
-from cuttle.model import Model
+from cuttle.model import CuttlePool, Model
 
 
 class Cuttle(object):
@@ -21,7 +21,7 @@ class Cuttle(object):
     :param \**kwargs: Arguments to be passed to the connection object when
                       connections are made.
 
-    :raise ValueError: If not database name is provided.
+    :raise ValueError: If no database name is provided.
 
     :example: Instantiating Cuttle is as simple as:
 
@@ -41,10 +41,42 @@ class Cuttle(object):
             pass
 
         self.Model = type(kwargs['db'], (Model,), {})
-        self.Model._configure_model(sql_type, **kwargs)
+        self.Model.configure(sql_type, **kwargs)
 
     def create_db(self):
         """
         Creates database.
         """
-        self.Model()._create_db()
+        connection_arguments = self.Model().connection_arguments
+        db_name = connection_arguments.pop('db')
+
+        db_stmnt = 'CREATE DATABASE IF NOT EXISTS {}'.format(db_name)
+
+        tmp_pool = CuttlePool(**connection_arguments)
+
+        con = tmp_pool.get_connection()
+        cur = con.cursor()
+
+        cur.execute(db_stmnt)
+        con.commit()
+
+        cur.close()
+        con.close()
+
+        self._create_tables()
+
+    def _create_tables(self):
+        """
+        Creates tables.
+        """
+        for tbl in set(self._nested_subclasses(self.Model)):
+            if tbl.__dict__.get('columns', False):
+                with tbl() as tbl:
+                    tbl.create_table().execute()
+
+    def _nested_subclasses(self, cls):
+        """
+        Creates a list of all nested subclasses.
+        """
+        return cls.__subclasses__() + [s for sc in cls.__subclasses__()
+                                       for s in self._nested_subclasses(sc)]

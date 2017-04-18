@@ -97,6 +97,10 @@ class Model(object):
         return type(self).__name__.lower()
 
     @property
+    def connection_arguments(self):
+        return self._pool.connection_arguments
+
+    @property
     def connection(self):
         """
         Returns a connection to the database. Gets a connection from the
@@ -145,8 +149,16 @@ class Model(object):
         return [tuple(v) for v in self._values]
 
     @classmethod
-    def _configure_model(cls, sql_type, **kwargs):
-        """Configures the Model class to connect to the database."""
+    def configure(cls, sql_type, **kwargs):
+        """
+        Configures the Model class to connect to the database.
+
+        :param str sql_type: The SQL implementation to use.
+        :param \**kwargs: Connection arguments to be used by the underlying
+                          connection object.
+
+        :raises ValueError: If improper sql_type parameter.
+        """
         cls._sql_type = sql_type.lower()
         if cls._sql_type == 'mysql':
             cls._pool = CuttlePool(**kwargs)
@@ -154,110 +166,26 @@ class Model(object):
             msg = "Please choose a valid sql extension"
             raise ValueError(msg)
 
-    def _create_db(self):
-        """
-        Creates database and tables.
-        """
-        # copy connection arguments
-        connection_arguments = {
-            k: v for k, v in self._pool._connection_arguments.items()
-        }
-        db_name = connection_arguments.pop('db')
-
-        throwaway_pool = CuttlePool(**connection_arguments)
-        self._connection = throwaway_pool.get_connection()
-
-        # Create database
-        self._generate_db(db_name).execute()
-
-        self.connection.select_db(db_name)
-
-        # Create tables
-        for tbl in set(_nested_subclasses(type(self))):
-            if tbl.__dict__.get('columns', False):
-                self._generate_table(tbl).execute()
-
-        self.close()
-
-    def _generate_db(self, db):
-        """
-        Genreates the create database statement.
-
-        :param str db: The name of the database to create.
-        """
-        self.append_query('CREATE DATABASE IF NOT EXISTS {}'.format(db))
-        return self
-
-    def _generate_table(self, tbl):
+    def create_table(self):
         """
         Generates table schema.
 
-        :param class tbl: A subclass of Model.
+        :raises AttributeError: If table has multiple primary keys.
         """
         create_tbl = []
-        # table names will be all lower case based on the name of the model
-        tbl_name = tbl.__name__.lower()
-
-        tbl_columns = tbl.columns
 
         create_tbl.append(
-            'CREATE TABLE IF NOT EXISTS {} ('.format(tbl_name))
+            'CREATE TABLE IF NOT EXISTS {} (\n'.format(self.name))
 
-        p_key = None
+        for column in self.columns:
+            create_tbl.append(column.column_schema())
 
-        for column in tbl_columns:
-            create_tbl.extend(self._generate_column(column))
-            if column.attributes['primary_key']:
-                p_key = column.attributes['name']
-
-        if p_key is not None:
-            create_tbl.append('PRIMARY KEY ({})'.format(p_key))
-        if create_tbl[-1][-1] == ',':
-            create_tbl[-1] = create_tbl[-1][:-1]
+        create_tbl[-1] = create_tbl[-1].replace(',', '')
 
         create_tbl.append(')')
 
-        self.append_query(' '.join(create_tbl))
+        self.append_query(''.join(create_tbl))
         return self
-
-    def _generate_column(self, column):
-        """
-        Generates column schema.
-
-        :param obj column: A :class:`~cuttle.columns.Column` object.
-        """
-        attr = column.attributes
-
-        create_col = [
-            attr['name'].lower()
-        ]
-
-        # add attributes
-        if attr['maximum'] is not None:
-            create_col.append('{}({})'.format(
-                attr['column_type'],
-                attr['maximum']))
-        elif attr['precision'] is not None:
-            create_col.append('{}{}'.format(
-                attr['column_type'],
-                attr['precision']))
-        else:
-            create_col.append(attr['column_type'])
-        if attr['required']:
-            create_col.append('NOT NULL')
-        if attr['unique']:
-            create_col.append('UNIQUE')
-        if attr['auto_increment']:
-            create_col.append('AUTO_INCREMENT')
-        if attr['default'] is not None:
-            create_col.append(
-                'DEFAULT {}'.format(attr['default']))
-        if attr['update'] is not None:
-            create_col.append(
-                'ON UPDATE {}'.format(attr['update']))
-        create_col[-1] += ','
-
-        return create_col
 
     def select(self, *args):
         """
