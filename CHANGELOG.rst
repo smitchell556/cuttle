@@ -20,6 +20,15 @@ Minor release, unreleased
   to better encompass all methods.
 - Switched connection implementation to `Cuttle Pool
   <https://github.com/smitchell556/cuttlepool>`_.
+- Added ``name`` and ``primary_key`` properties to ``Column``.
+- ``Column`` class generates schema for column with ``column_schema()`` method.
+- Made private method ``_configure_model()`` public and changed name to
+  ``configure()``.
+- Refactored database creation process. Now ``Cuttle``'s ``create_db()`` makes
+  the database, each subclass of ``Model`` makes the table it represents, and
+  the ``Column`` classes associated with each ``Model`` subclass generate the
+  schema of the respective columns.
+- Added ``connection_arguments`` property to ``Model``.
 
 
 Version 0.5.0
