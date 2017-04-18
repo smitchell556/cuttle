@@ -51,7 +51,7 @@ class Model(object):
 
     :example: Model is used as a subclass like so:
 
-              >>> from cuttle.home import Cuttle
+              >>> from cuttle.reef import Cuttle
               >>> db = Cuttle('mysql', 'test_db', 'localhost', 'squirtle', 'test_pw')
               >>> ExampleTable(db.Model):
               ...     columns = [IntField(name='example_column', serial=True),
@@ -60,9 +60,6 @@ class Model(object):
               The `ExampleTable` can now be used for making queries (assuming
               the database has been created manually or with
               :func:`~cuttle.home.Cuttle.create_db`).
-
-    :note: Model should not be instantiated. Treat it like an abstract base
-           class.
     """
 
     def __init__(self, validate_columns=True, raise_error_on_validation=True):
@@ -98,6 +95,10 @@ class Model(object):
 
     @property
     def connection_arguments(self):
+        """
+        Returns the connection arguments used by the underlying connection
+        driver.
+        """
         return self._pool.connection_arguments
 
     @property
@@ -106,7 +107,9 @@ class Model(object):
         Returns a connection to the database. Gets a connection from the
         connection pool if it doesn't already have one.
 
-        Use :func:`~cuttle.home.Model.close` to close the connection.
+        :note: Use :func:`~cuttle.home.Model.close` to close the connection.
+               :func:`~cuttle.home.Model.close` is not necessary if using the
+               ``Model`` object as a context manager.
         """
         try:
             self._connection.ping()

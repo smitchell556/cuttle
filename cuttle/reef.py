@@ -12,9 +12,7 @@ from cuttle.model import CuttlePool, Model
 class Cuttle(object):
     """
     Cuttle represents the database. It is used to create the database and
-    models. The argument can be passed to Cuttle as an environment variable or
-    as a variable from another module/file that is not tracked by your
-    repository if you do not want to hardcode the db credentials.
+    models.
 
     :param str sql_type: Determines what sql implementation to use (MySQL,
                          SQLite, etc).
@@ -25,7 +23,7 @@ class Cuttle(object):
 
     :example: Instantiating Cuttle is as simple as:
 
-              >>> from cuttle.home import Cuttle
+              >>> from cuttle.reef import Cuttle
               >>> db = Cuttle('mysql', 'test_db', 'localhost', 'squirtle', 'my_passwd')
     """
 

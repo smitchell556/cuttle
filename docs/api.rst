@@ -22,14 +22,16 @@ Model subclasses represent tables.
 .. autoclass:: Model
    :members:
    :inherited-members:
+   :exclude-members: create_table
 
 Column Objects
 --------------
 
 .. module:: cuttle.columns
 
-Column objects are used to in Model subclasses.
+Column objects are used to represent columns in Model subclasses.
 
 .. autoclass:: Column
    :members:
    :inherited-members:
+   :exclude-members: attributes, name, primary_key, column_schema
