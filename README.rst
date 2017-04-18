@@ -100,15 +100,12 @@ Running the tests
 
 To run the tests, tox will need to be installed with ``pip install tox``.
 
-Tests can be run using tox with the command ``tox <sql>`` to run tests that
-require a connection to a database, where ``<sql>`` is the specific
-implementation desired for testing (such as ``mysql``), or ``tox ambiguous`` to
-run tests that do not require a connection to a database. If the tests require
-user credentials, create a file ``<sql>_credentials.py`` with the appropriate
-variables in the corresponding test directory, where ``<sql>`` is the specific
-implementation desired for testing. For example, to run ``tox mysql``,
-``USER`` and ``PASSWD`` variables must be placed in a file called
-``mysql_credentials.py`` under the ``tests/mysql/`` directory.
+First set the environment variable ``CUTTLE_SQL`` to the implementation you
+want to test. For example ``export CUTTLE_SQL="mysql"`` will ensure the tests
+are run using MySQL. Tests can be run using tox with the command ``tox``. If
+the tests require user credentials, create a file ``<sql>_credentials.py`` with
+the appropriate variables in the test directory, where ``<sql>`` is the specific
+implementation desired for testing.
 
 Where can I get help?
 ---------------------
