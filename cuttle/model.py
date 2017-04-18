@@ -579,6 +579,8 @@ class Model(object):
             self._connection.close()
         except:
             pass
+        finally:
+            self._connection = None
 
 
 def _nested_subclasses(cls):
