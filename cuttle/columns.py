@@ -31,9 +31,6 @@ class Column(object):
                            Defaults to ``False``.
     :param primary_key: Signifies column as primary key of table. Defaults to
                         ``False``.
-
-    :note: If an attribute is not specified, then the default of the SQL
-           implementation will be used.
     """
 
     def __init__(self, name, column_type, maximum=None, precision=None,
