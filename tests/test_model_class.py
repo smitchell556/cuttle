@@ -2,6 +2,7 @@
 """
 Tests related to the Model class.
 """
+import sys
 import unittest
 import warnings
 
@@ -53,6 +54,14 @@ class ModelConnectionTestCase(ModelTestCase):
         with self.testtable1() as heros:
             self.assertIsInstance(heros.cursor, self.Cursor)
 
+    def test_connection_arguments_property(self):
+        with self.testtable1() as heros:
+            test_outp = {k: v for k, v in self.credentials.items()}
+            test_outp.update(db=DB)
+
+            for k in test_outp.keys():
+                self.assertEqual(heros.connection_arguments[k], test_outp[k])
+
 
 class ModelQueryValuesTestCase(unittest.TestCase):
 
@@ -81,6 +90,28 @@ class ModelQueryValuesTestCase(unittest.TestCase):
             model._values = seq_of_values
             self.assertEqual(model.seq_of_values,
                              [tuple(v) for v in seq_of_values])
+
+
+class ModelConfigure(ModelTestCase):
+
+    def test_proper_sql_type(self):
+        sqls = ['mysql']
+        for sql in sqls:
+            Model.configure(sql)
+            self.assertEqual(Model._sql_type, sql)
+            self.assertIsInstance(Model._pool, self.Pool)
+
+    def test_improper_sql_type(self):
+        with self.assertRaises(ValueError):
+            Model.configure('wrong')
+
+
+class ModelCreateTable(ModelTestCase):
+
+    def test_create_table(self):
+        with self.testtable1() as heros:
+            heros.create_table()
+            self.assertEqual(heros.query, self.create_heros_statement)
 
 
 class ModelSelectTestCase(ModelStatementsTestCase):
@@ -255,6 +286,12 @@ class ModelCheckColumnsTestCase(ModelTestCase):
     def test_error_raised(self):
         with self.assertRaises(ValueError):
             with self.testtable1() as heros:
+                heros.check_columns('villain_name')
+
+    @unittest.skipIf(sys.version_info < (3, 3), 'test for warning skipped')
+    def test_warning(self):
+        with self.assertWarns(UserWarning):
+            with self.testtable1(raise_error_on_validation=False) as heros:
                 heros.check_columns('villain_name')
 
     def test_false_rv(self):

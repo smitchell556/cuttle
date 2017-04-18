@@ -43,7 +43,7 @@ class BaseDbTestCase(unittest.TestCase):
 
         self.create_heros_statement = (
             'CREATE TABLE IF NOT EXISTS {} (\n'
-            'hero_id INT,\n'
+            'hero_id INT AUTO_INCREMENT PRIMARY KEY,\n'
             'hero_name VARCHAR(16)\n'
             ')').format(self.testtable1().name)
         self.heros_schema = (('hero_id', 'int(11)', 'NO', 'PRI', None, 'auto_increment'),
