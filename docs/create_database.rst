@@ -7,8 +7,7 @@ and Model subclasses which represent tables.
 In order to make these objects, you need to import Cuttle and the Column class.
 Create a file ``cuttle_tutorial.py`` and add the following import statements::
 
-  from cuttle.reef import Cuttle
-  from cuttle.columns import Column
+  from cuttle.reef import Cuttle, Column
 
 The next line creates a Cuttle object, which we will use to create subclasses
 of the Model class. These subclasses will reflect the tables that Cuttle will
@@ -38,7 +37,7 @@ Under the Cuttle object, create a Model subclass as follows::
 
   class TouchPool(db.Model):
       columns = [
-          Column('fish_id', 'INT', primary_key=True),
+          Column('fish_id', 'INT', primary_key=True, auto_increment=True),
           Column('fish_type', 'VARCHAR', required=True),
           Column('fish_name', 'VARCHAR', required=True),
           Column('age', 'INT', required=True),
