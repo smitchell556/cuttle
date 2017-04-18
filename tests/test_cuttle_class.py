@@ -8,6 +8,7 @@ import unittest
 from cuttle.reef import Cuttle, Column
 from cuttlepool import CuttlePool
 from cuttlepool.cuttlepool import PoolConnection
+from pymysql.cursors import Cursor
 
 
 DB = '_cuttle_test_db'
@@ -18,6 +19,10 @@ HOST = 'localhost'
 class BaseDbTestCase(unittest.TestCase):
 
     def setUp(self):
+        self.Pool = CuttlePool
+        self.Connection = PoolConnection
+        self.Cursor = Cursor
+
         self.credentials = dict(host=HOST)
 
         self.sql_type = os.environ['CUTTLE_SQL'].lower()
@@ -31,7 +36,7 @@ class BaseDbTestCase(unittest.TestCase):
 
         class Heros(self.db.Model):
             columns = [
-                Column('hero_id', 'INT'),
+                Column('hero_id', 'INT', auto_increment=True, primary_key=True),
                 Column('hero_name', 'VARCHAR', maximum=16)
             ]
         self.testtable1 = Heros
@@ -41,7 +46,7 @@ class BaseDbTestCase(unittest.TestCase):
             'hero_id INT,\n'
             'hero_name VARCHAR(16)\n'
             ')').format(self.testtable1().name)
-        self.heros_schema = (('hero_id', 'int(11)', 'YES', '', None, ''),
+        self.heros_schema = (('hero_id', 'int(11)', 'NO', 'PRI', None, 'auto_increment'),
                              ('hero_name', 'varchar(16)', 'YES', '', None, ''))
 
     def tearDown(self):
@@ -68,9 +73,6 @@ class DbNestedModelTestCase(BaseDbTestCase):
                 Column('villain_name', 'VARCHAR', maximum=16)
             ]
         self.testtable2 = Villains
-
-        self.villains_schema = (('villain_id', 'int(11)', 'YES', '', None, ''),
-                                ('villain_name', 'varchar(16)', 'YES', '', None, ''))
 
 
 class TwoDbTestCase(BaseDbTestCase):
@@ -120,6 +122,13 @@ class CuttleCreateDbTestCase(BaseDbTestCase):
 
         self.assertIn((DB,), dbs)
 
+    def test_table_schema(self):
+        self.db.create_db()
+
+        pool = self.createPool(db=DB, **self.credentials)
+        con = pool.get_connection()
+        cur = con.cursor()
+
         # get tables
         cur.execute('SHOW TABLES')
         tbls = cur.fetchall()
@@ -160,8 +169,11 @@ class CuttleCreateMultiDbTestCase(TwoDbTestCase):
         cur2.execute('SHOW TABLES')
         tbls2 = cur2.fetchall()
 
-        self.assertEqual(((self.testtable1().name,),), tbls1)
-        self.assertEqual(((self.testtable2().name,),), tbls2)
+        self.assertIn((self.testtable1().name,), tbls1)
+        self.assertNotIn((self.testtable2().name,), tbls1)
+
+        self.assertIn((self.testtable2().name,), tbls2)
+        self.assertNotIn((self.testtable1().name,), tbls2)
 
 
 class CuttleCreateDbNestedModels(DbNestedModelTestCase):
@@ -180,9 +192,3 @@ class CuttleCreateDbNestedModels(DbNestedModelTestCase):
         self.assertIn((self.testtable1().name,), tbls)
         self.assertIn((self.testtable2().name,), tbls)
         self.assertNotIn((self.uselesstable().name,), tbls)
-
-        # get table schema
-        cur.execute('DESCRIBE {}'.format(self.testtable2().name))
-        tblschma = cur.fetchall()
-
-        self.assertEqual(self.villains_schema, tblschma)
