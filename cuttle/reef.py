@@ -38,8 +38,14 @@ class Cuttle(object):
         except:
             pass
 
+        self._name = kwargs['db']
+
         self.Model = type(kwargs['db'], (Model,), {})
         self.Model.configure(sql_type, **kwargs)
+
+    @property
+    def name(self):
+        return self._name
 
     def _create_tables(self):
         """
@@ -68,9 +74,9 @@ class Cuttle(object):
             self.drop_db()
 
         connection_arguments = self.Model().connection_arguments
-        db_name = connection_arguments.pop('db')
+        connection_arguments.pop('db')
 
-        db_stmnt = 'CREATE DATABASE {}'.format(db_name)
+        db_stmnt = 'CREATE DATABASE {}'.format(self.name)
 
         tmp_pool = CuttlePool(**connection_arguments)
 
@@ -90,7 +96,7 @@ class Cuttle(object):
         Drops the database.
         """
         with self.Model() as model:
-            db_name = model.connection_arguments['db']
-            drop_db = 'DROP DATABASE IF EXISTS {}'.format(db_name)
+            drop_db = 'DROP DATABASE IF EXISTS {}'.format(self.name)
+
             model.append_query(drop_db)
             model.execute()

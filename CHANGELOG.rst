@@ -23,6 +23,7 @@ Minor release, unreleased
   the database, each subclass of ``Model`` makes the table it represents, and
   the ``Column`` classes associated with each ``Model`` subclass generate the
   schema of the respective columns.
+- ``Cuttle`` objects now have ``name`` property.
 
 Version 0.5.0
 -------------

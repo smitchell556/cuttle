@@ -106,6 +106,11 @@ class CuttleInstanceTestCase(unittest.TestCase):
         with self.assertRaises(ValueError):
             db = Cuttle('mysql')
 
+    def test_name_property(self):
+        db_name = 'get_schwifty'
+        db = Cuttle('mysql', db=db_name)
+        self.assertEqual(db.name, db_name)
+
 
 class CuttleCreateDbTestCase(BaseDbTestCase):
 
