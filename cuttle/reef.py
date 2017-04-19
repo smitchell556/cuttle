@@ -41,28 +41,6 @@ class Cuttle(object):
         self.Model = type(kwargs['db'], (Model,), {})
         self.Model.configure(sql_type, **kwargs)
 
-    def create_db(self):
-        """
-        Creates database.
-        """
-        connection_arguments = self.Model().connection_arguments
-        db_name = connection_arguments.pop('db')
-
-        db_stmnt = 'CREATE DATABASE IF NOT EXISTS {}'.format(db_name)
-
-        tmp_pool = CuttlePool(**connection_arguments)
-
-        con = tmp_pool.get_connection()
-        cur = con.cursor()
-
-        cur.execute(db_stmnt)
-        con.commit()
-
-        cur.close()
-        con.close()
-
-        self._create_tables()
-
     def _create_tables(self):
         """
         Creates tables.
@@ -78,3 +56,41 @@ class Cuttle(object):
         """
         return cls.__subclasses__() + [s for sc in cls.__subclasses__()
                                        for s in self._nested_subclasses(sc)]
+
+    def create_db(self, drop_existing=False):
+        """
+        Creates database.
+
+        :param bool drop_existing: If ``True`` drops database if exists.
+                                   Defaults to ``False``.
+        """
+        if drop_existing:
+            self.drop_db()
+
+        connection_arguments = self.Model().connection_arguments
+        db_name = connection_arguments.pop('db')
+
+        db_stmnt = 'CREATE DATABASE {}'.format(db_name)
+
+        tmp_pool = CuttlePool(**connection_arguments)
+
+        con = tmp_pool.get_connection()
+        cur = con.cursor()
+
+        cur.execute(db_stmnt)
+        con.commit()
+
+        cur.close()
+        con.close()
+
+        self._create_tables()
+
+    def drop_db(self):
+        """
+        Drops the database.
+        """
+        with self.Model() as model:
+            db_name = model.connection_arguments['db']
+            drop_db = 'DROP DATABASE IF EXISTS {}'.format(db_name)
+            model.append_query(drop_db)
+            model.execute()

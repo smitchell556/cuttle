@@ -4,6 +4,7 @@ Tests related to the Cuttle class.
 """
 import os
 import unittest
+import warnings
 
 from cuttle.reef import Cuttle, Column
 from cuttlepool import CuttlePool
@@ -50,9 +51,8 @@ class BaseDbTestCase(unittest.TestCase):
                              ('hero_name', 'varchar(16)', 'YES', '', None, ''))
 
     def tearDown(self):
-        with self.db.Model() as drop_db:
-            drop_db.append_query('DROP DATABASE IF EXISTS {}'.format(DB))
-            drop_db.execute()
+        warnings.filterwarnings('ignore')
+        self.db.drop_db()
 
     def createPool(self, **kwargs):
         return CuttlePool(**kwargs)
@@ -176,7 +176,7 @@ class CuttleCreateMultiDbTestCase(TwoDbTestCase):
         self.assertNotIn((self.testtable1().name,), tbls2)
 
 
-class CuttleCreateDbNestedModels(DbNestedModelTestCase):
+class CuttleCreateDbNestedModelsTestCase(DbNestedModelTestCase):
 
     def test_correct_tables_made(self):
         self.db.create_db()
@@ -192,3 +192,32 @@ class CuttleCreateDbNestedModels(DbNestedModelTestCase):
         self.assertIn((self.testtable1().name,), tbls)
         self.assertIn((self.testtable2().name,), tbls)
         self.assertNotIn((self.uselesstable().name,), tbls)
+
+
+class CuttleDropDbTestCase(BaseDbTestCase):
+
+    def setUp(self):
+        super(CuttleDropDbTestCase, self).setUp()
+        self.db.create_db()
+
+    def test_drop_db(self):
+        pool = self.createPool(**self.credentials)
+        con = pool.get_connection()
+        cur = con.cursor()
+
+        # get databases
+        cur.execute('SHOW DATABASES')
+        dbs = cur.fetchall()
+
+        # make sure database actually exists
+        self.assertIn((DB,), dbs)
+
+        # drop the database
+        self.db.drop_db()
+
+        # get databases
+        cur.execute('SHOW DATABASES')
+        dbs = cur.fetchall()
+
+        # make sure database no longer exists
+        self.assertNotIn((DB,), dbs)
