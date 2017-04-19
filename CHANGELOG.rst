@@ -13,11 +13,6 @@ Minor release, unreleased
   if any.
 - ``connection_arguments`` has been removed from ``_config`` on ``Model`` and
   become a standalone property of the API.
-- ``connection_arguments`` are copied upon instantiation of a Model subclass,
-  which prevents modification of ``connection_arguments`` from affecting all
-  Model subclasses of the associated Cuttle objects ``Model`` property.
-- Test suite is completely redone using tox and unittest. Test suite is expanded
-  to better encompass all methods.
 - Switched connection implementation to `Cuttle Pool
   <https://github.com/smitchell556/cuttlepool>`_.
 - Added ``name`` and ``primary_key`` properties to ``Column``.
@@ -28,8 +23,6 @@ Minor release, unreleased
   the database, each subclass of ``Model`` makes the table it represents, and
   the ``Column`` classes associated with each ``Model`` subclass generate the
   schema of the respective columns.
-- Added ``connection_arguments`` property to ``Model``.
-
 
 Version 0.5.0
 -------------
