@@ -2,6 +2,7 @@
 """
 Tests related to the Column class.
 """
+import decimal
 import unittest
 
 from cuttle.reef import Column
@@ -63,14 +64,34 @@ class ColumnSchemaTestCase(unittest.TestCase):
         column_schema = 'test INT AUTO_INCREMENT,\n'
         self.assertEqual(column.column_schema(), column_schema)
 
-    def test_column_default_number_type(self):
+    def test_column_default_integer_type(self):
         column = Column('test', 'INT', default=6)
         column_schema = 'test INT DEFAULT 6,\n'
+        self.assertIsInstance(column.attributes['default'], int)
+        self.assertEqual(column.column_schema(), column_schema)
+
+    def test_column_default_fixed_point_type_from_float(self):
+        column = Column('test', 'DECIMAL', default=6.01)
+        column_schema = 'test DECIMAL DEFAULT 6.01,\n'
+        self.assertIsInstance(column.attributes['default'], decimal.Decimal)
+        self.assertEqual(column.column_schema(), column_schema)
+
+    def test_column_default_fixed_point_type_from_str(self):
+        column = Column('test', 'DECIMAL', default='6.01')
+        column_schema = 'test DECIMAL DEFAULT 6.01,\n'
+        self.assertIsInstance(column.attributes['default'], decimal.Decimal)
+        self.assertEqual(column.column_schema(), column_schema)
+
+    def test_column_default_floating_point_type(self):
+        column = Column('test', 'FLOAT', default=6.01)
+        column_schema = 'test FLOAT DEFAULT 6.01,\n'
+        self.assertIsInstance(column.attributes['default'], float)
         self.assertEqual(column.column_schema(), column_schema)
 
     def test_column_default_string_type(self):
         column = Column('test', 'VARCHAR', maximum=16, default='test')
         column_schema = 'test VARCHAR(16) DEFAULT \'test\',\n'
+        self.assertIsInstance(column.attributes['default'], str)
         self.assertEqual(column.column_schema(), column_schema)
 
     def test_column_update(self):

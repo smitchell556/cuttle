@@ -4,7 +4,27 @@ This module contains the Column class for specifying table columns.
 
 :license: MIT, see LICENSE for details.
 """
+import decimal
 
+
+INTEGER_TYPES = [
+    'INTEGER',
+    'INT',
+    'SMALLINT',
+    'TINYINT',
+    'MEDIUMINT',
+    'BIGINT'
+]
+
+FIXED_POINT_TYPES = [
+    'DECIMAL',
+    'NUMERIC'
+]
+
+FLOATING_POINT_TYPES = [
+    'FLOAT',
+    'DOUBLE'
+]
 
 STRING_TYPES = [
     'CHAR',
@@ -42,32 +62,24 @@ class Column(object):
                                 queries. Defaults to ``False``.
     :param bool primary_key: Signifies column as primary key of table.
                              Defaults to ``False``.
-
-    :raises TypeError: If either ``name``, ``column_type``, and ``schema`` is
-                       ``None`` *or* ``schema`` is ``None`` and ``name`` or
-                       ``column_type`` is ``None``.
     """
 
     def __init__(self, name, column_type, maximum=None, precision=None,
                  required=False, unique=False, auto_increment=False,
                  default=None, update=None, primary_key=False):
-        try:
-            #: Contains values specifying column parameters.
-            self.attributes = dict(
-                name=name.lower(),
-                column_type=column_type.upper(),
-                maximum=maximum,
-                precision=precision,
-                required=required,
-                unique=unique,
-                auto_increment=auto_increment,
-                default=self._format_default(column_type, default),
-                update=update,
-                primary_key=primary_key
-            )
-
-        except:
-            self._schema_to_column(schema)
+        #: Contains values specifying column parameters.
+        self.attributes = dict(
+            name=name.lower(),
+            column_type=column_type.upper(),
+            maximum=maximum,
+            precision=precision,
+            required=required,
+            unique=unique,
+            auto_increment=auto_increment,
+            default=self._format_default(column_type, default),
+            update=update,
+            primary_key=primary_key
+        )
 
     @property
     def name(self):
@@ -87,39 +99,17 @@ class Column(object):
         """
         Formats ``default`` input if string type.
         """
-        if default and column_type in STRING_TYPES:
-            default = "'{}'".format(default)
+        if default is not None:
+            if column_type in INTEGER_TYPES:
+                default = int(default)
+            elif column_type in FIXED_POINT_TYPES:
+                default = decimal.Decimal(str(default))
+            elif column_type in FLOATING_POINT_TYPES:
+                default = float(default)
+            elif column_type in STRING_TYPES:
+                default = "'{}'".format(default)
 
         return default
-
-    def _schema_to_column(self, schema):
-        """
-        Converts column schema to ``Column`` object.
-
-        :param tuple schema: Column schema in the form of a tuple.
-        """
-        column_type = re.findall('.[^\(]*', schema[1])
-        maximum = decimal = None
-        try:
-            decimal = tuple(int(x)
-                            for x in re.sub('[\(\)]', '', column_type[1])
-                            .split(','))
-        except:
-            try:
-                maximum = int(re.sub('[\(\)]', '', column_type[1]))
-            except:
-                pass
-
-        self.attributes = dict(
-            name=schema[0].lower,
-            column_type=column_type[0],
-            maximum=maximum,
-            decimal=decimal,
-            required=True if schema[2].upper() == 'NO' else False,
-            unique=True if schema[3].upper() == 'UNI' else False,
-            auto_increment=True if 'auto_increment' in schema[5] else False,
-            default=None
-        )
 
     def column_schema(self):
         """
