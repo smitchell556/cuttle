@@ -6,4 +6,4 @@ Cuttle, the simple, extendable ORM.
 """
 
 
-__version__ = '0.6.0.dev'
+__version__ = '0.6.0'

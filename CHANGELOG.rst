@@ -7,8 +7,6 @@ Here are the changes made to Cuttle for each release.
 Version 0.6.0
 -------------
 
-Minor release, unreleased
-
 - ``execute()`` and ``executemany()`` no longer close previously opened cursor,
   if any.
 - ``connection_arguments`` has been removed from ``_config`` on ``Model`` and
