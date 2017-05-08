@@ -1,7 +1,7 @@
 .PHONY: release bugfix
 
 release:
-	python scripts/release.py
+	python3 scripts/release.py
 
 bugfix:
-	python scripts/bugfix.py
+	python3 scripts/bugfix.py

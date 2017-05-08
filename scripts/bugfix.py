@@ -29,10 +29,10 @@ def bump_bugfix_version():
     with open(os.path.join(os.getcwd(), 'cuttle/__init__.py'), 'w') as f:
         f.write(init_file)
 
-    print 'Bumping version from {} to {}'.format(version, release_version)
-    print '-------------------------{}{}\n'.format(
+    print('Bumping version from {} to {}'.format(version, release_version))
+    print('-------------------------{}{}\n'.format(
         ''.join(['-' for __ in range(len(version))]),
-        ''.join(['-' for __ in range(len(release_version))]))
+        ''.join(['-' for __ in range(len(release_version))])))
 
     return release_version
 
@@ -48,16 +48,16 @@ def check_changelog(version):
 def commit(msg):
     subprocess.Popen('git commit -a -m "{}"'.format(msg),
                      shell=True).wait()
-    print 'Committed changes for release'
-    print '-----------------------------\n'
+    print('Committed changes for release')
+    print('-----------------------------\n')
 
 
 def git_tag(version):
     subprocess.Popen(
         'git tag v{}'.format(version),
         shell=True).wait()
-    print 'v{} tag added to master'.format(version)
-    print '---------------------{}\n'.format(''.join(['-' for __ in range(len(version))]))
+    print('v{} tag added to master'.format(version))
+    print('---------------------{}\n'.format(''.join(['-' for __ in range(len(version))])))
 
 
 def upload_pypi(version):
@@ -65,8 +65,8 @@ def upload_pypi(version):
                       'python setup.py sdist bdist_wheel && '
                       'twine upload dist/cuttle-{}*').format(version),
                      shell=True).wait()
-    print 'Uploaded to PyPI'
-    print '----------------\n'
+    print('Uploaded to PyPI')
+    print('----------------\n')
 
 
 def main():
