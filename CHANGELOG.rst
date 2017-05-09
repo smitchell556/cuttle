@@ -27,6 +27,8 @@ Version 0.6.0
   the ``Column`` classes associated with each ``Model`` subclass generate the
   schema of the respective columns.
 - ``Cuttle`` objects now have ``name`` property.
+- Switched all relative imports to absolut imports to avoid ``ImportError``'s
+  in Python 3.x.
 
 Version 0.5.0
 -------------

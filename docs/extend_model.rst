@@ -87,9 +87,9 @@ Back in the python interpreter, try using the custom query method you just made.
 
 Now you can customize Cuttle to create more specific statements based on your
 needs. If you would like custom query methods available on all your models, you
-can create a subclass of ``Model`` that contains all the custom query methods
-you would like, then set ``db.Model`` to that subclass and use that to create
-your table models. If there are any Model subclasses that you do not want to be
+can create a subclass of ``db.Model`` that contains all the custom query methods
+you would like, and then subclass that to make models that represent the desired
+tables. If there are any Model subclasses that you do not want to be
 made into tables by :func:`~cuttle.reef.Cuttle.create_db`, just omit the
 ``columns`` property from that class and a table will not be made in the
 database for it.

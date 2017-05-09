@@ -20,11 +20,6 @@ class Cuttle(object):
                       connections are made.
 
     :raise ValueError: If no database name is provided.
-
-    :example: Instantiating Cuttle is as simple as:
-
-              >>> from cuttle.reef import Cuttle
-              >>> db = Cuttle('mysql', 'test_db', 'localhost', 'squirtle', 'my_passwd')
     """
 
     def __init__(self, sql_type, **kwargs):

@@ -48,18 +48,6 @@ class Model(object):
                                            false, no error will be raised.
 
     :raises TypeError: Error caused by instantiating Model.
-
-    :example: Model is used as a subclass like so:
-
-              >>> from cuttle.reef import Cuttle
-              >>> db = Cuttle('mysql', 'test_db', 'localhost', 'squirtle', 'test_pw')
-              >>> ExampleTable(db.Model):
-              ...     columns = [IntField(name='example_column', serial=True),
-              ...                TextField(name='example_text')]
-
-              The `ExampleTable` can now be used for making queries (assuming
-              the database has been created manually or with
-              :func:`~cuttle.home.Cuttle.create_db`).
     """
 
     def __init__(self, validate_columns=True, raise_error_on_validation=True):
