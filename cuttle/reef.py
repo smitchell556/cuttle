@@ -49,7 +49,7 @@ class Cuttle(object):
         for tbl in set(self._nested_subclasses(self.Model)):
             if tbl.__dict__.get('columns', False):
                 with tbl() as tbl:
-                    tbl.create_table().execute()
+                    tbl._create_table().execute()
 
     def _nested_subclasses(self, cls):
         """

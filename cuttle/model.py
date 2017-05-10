@@ -33,19 +33,20 @@ LEGAL_CONDITIONS = [
 
 class Model(object):
     """
-    Model represents a table. It is used for querying the database. It is meant
-    to be subclassed to create tables.
+    ``Model`` represents a table. It is used for querying the database. It is
+    meant to be subclassed to create tables.
 
     :param bool validate_columns: Requires a validation check on all query
-                                  methods that pass columns as parameters. If 
-                                  raise_error_on_validation is false, no error
-                                  will be raised, but the query method will not
-                                  modify ``query`` or ``values`` on the object.
-                                  Defaults to ``True``.
-    :param bool raise_error_on_validation: Requires that an error is raised when
-                                           a column fails validation. Defaults
-                                           to ``True``. If validate_columns is
-                                           false, no error will be raised.
+                                  methods that pass columns as parameters.
+                                  If raise_error_on_validation is false, no
+                                  error will be raised, but the query method
+                                  will not modify ``query`` or ``values`` on
+                                  the object. Defaults to ``True``.
+    :param bool raise_error_on_validation: Requires that an error is raised
+                                           when a column fails validation.
+                                           Defaults to ``True``. If
+                                           validate_columns is false, no error
+                                           will be raised.
 
     :raises TypeError: Error caused by instantiating Model.
     """
@@ -157,7 +158,7 @@ class Model(object):
             msg = "Please choose a valid sql extension"
             raise ValueError(msg)
 
-    def create_table(self):
+    def _create_table(self):
         """
         Generates table schema.
 
@@ -169,7 +170,7 @@ class Model(object):
             'CREATE TABLE IF NOT EXISTS {} (\n'.format(self.name))
 
         for column in self.columns:
-            create_tbl.append(column.column_schema())
+            create_tbl.append(column._column_schema())
 
         create_tbl[-1] = create_tbl[-1].replace(',', '')
 
@@ -183,8 +184,8 @@ class Model(object):
         Adds a SELECT query on the table associated with the model. If no
         arguments are supplied, all rows will be returned.
 
-        :param \*args: Columns to select for as strings. If no columns provided,
-                       all columns will be selected.
+        :param \*args: Columns to select for as strings. If no columns
+                       provided, all columns will be selected.
         """
         if args:
             args = self.columns_lower(*args)
@@ -260,8 +261,10 @@ class Model(object):
         """
         Adds a WHERE clause to the query. The WHERE clause checks for equality.
 
-        :param str condition: The conditional operator to use in the WHERE clause.
-        :param str comparison: The comparison operator to use in the WHERE clause.
+        :param str condition: The conditional operator to use in the WHERE
+                              clause.
+        :param str comparison: The comparison operator to use in the WHERE
+                               clause.
         :param \**kwargs: Key value pairs where the keys are the columns of the
                           table.
 
@@ -448,7 +451,7 @@ class Model(object):
 
         :raises ValueError: If parameters are not columns on model.
         """
-        column_names = set(col.attributes['name'].lower()
+        column_names = set(col._attributes['name'].lower()
                            for col in self.columns)
         failed_columns = set(arg.lower() for arg in args) - column_names
 
@@ -473,8 +476,8 @@ class Model(object):
         """
         Closes the database connection and cursor, if any.
 
-        :note: If model is instantiated outside of a with block, it is recommended
-               to explicitly call ``close()``.
+        :note: If model is instantiated outside of a with block, it is
+               recommended to explicitly call ``close()``.
         """
         self._close_connection()
 

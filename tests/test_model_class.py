@@ -106,14 +106,6 @@ class ModelConfigure(ModelTestCase):
             Model.configure('wrong')
 
 
-class ModelCreateTable(ModelTestCase):
-
-    def test_create_table(self):
-        with self.testtable1() as heros:
-            heros.create_table()
-            self.assertEqual(heros.query, self.create_heros_statement)
-
-
 class ModelSelectTestCase(ModelStatementsTestCase):
 
     def test_select_all(self):

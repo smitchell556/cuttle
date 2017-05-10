@@ -68,7 +68,7 @@ class Column(object):
                  required=False, unique=False, auto_increment=False,
                  default=None, update=None, primary_key=False):
         #: Contains values specifying column parameters.
-        self.attributes = dict(
+        self._attributes = dict(
             name=name.lower(),
             column_type=column_type.upper(),
             maximum=maximum,
@@ -86,14 +86,7 @@ class Column(object):
         """
         Returns the name of the column in lower case.
         """
-        return self.attributes['name']
-
-    @property
-    def primary_key(self):
-        """
-        Returns a bool indicating if column is a primary key.
-        """
-        return self.attributes['primary_key']
+        return self._attributes['name']
 
     def _format_default(self, column_type, default):
         """
@@ -111,37 +104,39 @@ class Column(object):
 
         return default
 
-    def column_schema(self):
+    def _column_schema(self):
         """
         Generates column schema.
         """
         create_col = [self.name]
 
         # add attributes
-        if self.attributes['maximum'] is not None:
+        if self._attributes['maximum'] is not None:
             create_col.append('{}({})'.format(
-                self.attributes['column_type'],
-                self.attributes['maximum']))
-        elif self.attributes['precision'] is not None:
+                self._attributes['column_type'],
+                self._attributes['maximum']))
+        elif self._attributes['precision'] is not None:
             create_col.append('{}{}'.format(
-                self.attributes['column_type'],
-                self.attributes['precision']))
+                self._attributes['column_type'],
+                self._attributes['precision']))
         else:
-            create_col.append(self.attributes['column_type'])
-        if self.attributes['required']:
+            create_col.append(self._attributes['column_type'])
+
+        if self._attributes['required']:
             create_col.append('NOT NULL')
-        if self.attributes['unique']:
+        if self._attributes['unique']:
             create_col.append('UNIQUE')
-        if self.attributes['auto_increment']:
+        if self._attributes['auto_increment']:
             create_col.append('AUTO_INCREMENT')
-        if self.attributes['default'] is not None:
+        if self._attributes['default'] is not None:
             create_col.append(
-                'DEFAULT {}'.format(self.attributes['default']))
-        if self.attributes['update'] is not None:
+                'DEFAULT {}'.format(self._attributes['default']))
+        if self._attributes['update'] is not None:
             create_col.append(
-                'ON UPDATE {}'.format(self.attributes['update']))
-        if self.primary_key:
+                'ON UPDATE {}'.format(self._attributes['update']))
+        if self._attributes['primary_key']:
             create_col.append('PRIMARY KEY')
+
         create_col[-1] += ',\n'
 
         return ' '.join(create_col)
