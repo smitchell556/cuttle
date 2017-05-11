@@ -4,6 +4,11 @@ Cuttle Changelog
 
 Here are the changes made to Cuttle for each release.
 
+Version 0.8.0
+-------------
+
+Minor release, unreleased
+
 Version 0.7.0
 -------------
 
