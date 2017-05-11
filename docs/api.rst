@@ -12,8 +12,8 @@ The Cuttle object connects all the tables and is used to create the database
    :members:
    :inherited-members:
 
-Model Objects
--------------
+Model Object
+------------
 
 .. module:: cuttle.model
 
@@ -23,13 +23,25 @@ Model subclasses represent tables.
    :members:
    :inherited-members:
 
-Column Objects
---------------
+Column Object
+-------------
 
 .. module:: cuttle.columns
 
 Column objects are used to represent columns in Model subclasses.
 
 .. autoclass:: Column
+   :members:
+   :inherited-members:
+
+Transaction object
+------------------
+
+.. module:: cuttle.transaction
+
+Transaction objects are used to bundle multiple executions across Models into
+one transaction.
+
+.. autoclass:: Transaction
    :members:
    :inherited-members:
