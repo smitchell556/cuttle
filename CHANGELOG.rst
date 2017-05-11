@@ -4,10 +4,12 @@ Cuttle Changelog
 
 Here are the changes made to Cuttle for each release.
 
-Version 0.8.0
+Version 0.7.1
 -------------
 
-Minor release, unreleased
+- Removed parameters allowing selection of cursor type on ``execute`` methods.
+- Fix issue where fetch methods on ``Model`` objects were not using the cursor
+  from the ``Transaction`` object if it was present.
 
 Version 0.7.0
 -------------
