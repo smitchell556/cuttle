@@ -8,7 +8,6 @@ database.
 import warnings
 
 from cuttlepool import CuttlePool
-from pymysql.cursors import Cursor, DictCursor, SSCursor, SSDictCursor
 
 
 LEGAL_COMPARISONS = [
@@ -119,6 +118,9 @@ class Model(object):
         :note: A connection will automatically be made to the database before
                creating a cursor.
         """
+        if self._transaction is not None:
+            return self._transaction._cursor
+
         if self._cursor is None or self._cursor.connection is None:
             self._cursor = self.connection.cursor()
         return self._cursor
@@ -304,39 +306,15 @@ class Model(object):
             self.extend_values(values)
         return self
 
-    def execute(self, dict_cursor=False, unbuffered_cursor=False, commit=True):
+    def execute(self, commit=False):
         """
         Executes the query and returns the results (if any). If a
-        ``Transaction`` object was passed to the ``Model`` on instantiation,
-        the parameters accepted on the ``execute()`` method will be ignored
-        since all statements will be executed by the underlying ``Transaction``
-        object.
 
-        :param bool dict_cursor: If true, results will be in a dict instead of
-                                 a tuple. Defaults to ``False``.
-        :param bool unbuffered_cursor: If true, uses an unbuffered cursor for
-                                       queries. Defaults to ``False``.
         :param bool commit: Will commit the executed statement if ``True``.
-                            Defaults to ``True``.
+                            Defaults to ``False``.
 
         :returns: The result of ``cursor.execute()``.
-
-        :note: If both ``dict_cursor`` and ``unbuffered_cursor`` are ``True``,
-               An unbuffered cursor will be used, and the results returned will
-               be formatted as dictionaries.
         """
-        if self._transaction:
-            return self._transaction._execute(self.query, self.values)
-
-        if dict_cursor and unbuffered_cursor:
-            self.connection.cursorclass = SSDictCursor
-        elif unbuffered_cursor:
-            self.connection.cursorclass = SSCursor
-        elif dict_cursor:
-            self.connection.cursorclass = DictCursor
-        else:
-            self.connection.cursorclass = Cursor
-
         result = self.cursor.execute(self.query, self.values)
 
         self.reset_query()
@@ -346,39 +324,15 @@ class Model(object):
 
         return result
 
-    def executemany(self, dict_cursor=False, unbuffered_cursor=False, commit=True):
+    def executemany(self, commit=False):
         """
         Executes the query with multiple values and returns the results (if any).
-        If a ``Transaction`` object was passed to the ``Model`` on
-        instantiation, the parameters accepted on the ``executemany()`` method
-        will be ignored since all statements will be executed by the
-        underlying ``Transaction`` object.
 
-        :param bool dict_cursor: If true, results will be in a dict instead of
-                                 a tuple. Defaults to ``False``.
-        :param bool unbuffered_cursor: If true, uses an unbuffered cursor for
-                                       queries. Defaults to ``False``.
         :param bool commit: Will commit the executed statement if ``True``.
-                            Defaults to ``True``.
+                            Defaults to ``False``.
 
         :returns: The result of ``cursor.execute()``.
-
-        :note: If both ``dict_cursor`` and ``unbuffered_cursor`` are ``True``,
-               An unbuffered cursor will be used, and the results returned will
-               be formatted as dictionaries.
         """
-        if self._transaction:
-            return self._transaction._executemany(self.query, self.seq_of_values)
-
-        if dict_cursor and unbuffered_cursor:
-            self.connection.cursorclass = SSDictCursor
-        elif unbuffered_cursor:
-            self.connection.cursorclass = SSCursor
-        elif dict_cursor:
-            self.connection.cursorclass = DictCursor
-        else:
-            self.connection.cursorclass = Cursor
-
         result = self.cursor.executemany(self.query, self.seq_of_values)
 
         self.reset_query()
@@ -405,12 +359,7 @@ class Model(object):
     def fetchall(self):
         """
         Fetches all the rows in the cursor.
-
-        :note: If the underlying cursor is unbuffered, PyMySQL's
-               ``fetchall_unbuffered()`` is called.
         """
-        if isinstance(self.cursor, SSCursor):
-            return self.cursor.fetchall_unbuffered()
         return self.cursor.fetchall()
 
     def commit(self):
@@ -505,7 +454,7 @@ class Model(object):
         """
         try:
             self._cursor.close()
-        except:
+        except Exception:
             pass
         finally:
             self._cursor = None
@@ -515,17 +464,10 @@ class Model(object):
         Close the connection, if any.
         """
         self._close_cursor()
+
         try:
             self._connection.close()
-        except:
+        except Exception:
             pass
         finally:
             self._connection = None
-
-
-def _nested_subclasses(cls):
-    """
-    Creates a list of all nested subclasses.
-    """
-    return cls.__subclasses__() + [s for sc in cls.__subclasses__()
-                                   for s in _nested_subclasses(sc)]

@@ -19,8 +19,14 @@ passing a list of table columns and list of values like so::
   >>> cols = ['fish_type', 'fish_name', 'age', 'personality']
   >>> vals = ['catfish', 'Hermes', 3, 'cuddly']
   >>> touch_pool.insert(cols, vals).execute()
+  >>> touch_pool.commit()
 
-A new row has been added to the database with the values inserted.
+A new row has been added to the database with the values inserted. In order for
+changes to be written to the database, the have to be committed. Instead of
+explicitely calling ``commit()``, ``True`` can be passed as an argument to
+``execute()`` like so::
+
+  >>> touch_pool.insert(cols, vals).execute(commit=True)
 
 SELECT
 ------
@@ -29,7 +35,7 @@ Selecting data from the database is very similar, using the
 :func:`~cuttle.model.Model.select` method. Try selecting every row in the
 database. ::
 
-  >>> touch_pool.select().execute()
+  >>> touch_pool.select().execute(commit=True)
 
 The results can be fetched using a fetch method like that of any SQL connector.
 Cuttle supports :func:`~cuttle.model.Model.fetchone`, :func:`~cuttle.model.Model.fetchmany`,
@@ -51,7 +57,7 @@ Using the instance as an iterator::
 Specific columns can also be selected for using the :func:`~cuttle.model.Model.select`
 method by passing the column names to select as arguments like::
 
-  >>> touch_pool.select('fish_name', 'fish_type').execute()
+  >>> touch_pool.select('fish_name', 'fish_type').execute(commit=True)
   >>> print touch_pool.fetchone()
   ('Hermes', 'catfish')
 
@@ -62,11 +68,11 @@ Updating data is done in the same vein using the :func:`~cuttle.model.Model.upda
 method. Whatever data you would like to be updated is passed as keyword arguments
 to the method where the key is the column name, like so::
 
-  >>> touch_pool.update(personality='cranky').execute()
+  >>> touch_pool.update(personality='cranky').execute(commit=True)
 
 The lonely row in the table should be updated to reflect this change. ::
 
-  >>> touch_pool.select().execute()
+  >>> touch_pool.select().execute(commit=True)
   >>> print touch_pool.fetchone()
   (1, 'catfish', 'Hermes', 3, 'cranky')
 
@@ -83,16 +89,18 @@ table. ::
 
   >>> cols = ['fish_type', 'fish_name', 'age', 'personality']
   >>> vals = ['catfish', 'Xerxes', 4, 'aloof']
-  >>> touch_pool.insert(cols, vals).execute()
+  >>> touch_pool.insert(cols, vals).execute(commit=True)
 
 Now update the table since Hermes was fed and is no longer cranky::
 
-  >>> touch_pool.update(personality='cuddly').where(fish_name='Hermes').execute()
+  >>> touch_pool.update(personality='cuddly')\
+                .where(fish_name='Hermes')\
+                .execute(commit=True)
 
 Checking the rows in the table, you'll see the row containing Hermes was
 updated, but the other row wasn't. ::
 
-  >>> touch_pool.select().execute()
+  >>> touch_pool.select().execute(commit=True)
   >>> for fish in touch_pool:
   ...     print fish
   ...
@@ -108,8 +116,8 @@ Next is deleting entries. Let's insert a third catfish to demonstrate. ::
 
   >>> cols = ['fish_type', 'fish_name', 'age', 'personality']
   >>> vals = ['catfish', 'Rascal', 7, 'moody']
-  >>> touch_pool.insert(cols, vals).execute()
-  >>> touch_pool.select().execute()
+  >>> touch_pool.insert(cols, vals).execute(commit=True)
+  >>> touch_pool.select().execute(commit=True)
   >>> for fish in touch_pool:
   ...     print fish
   ...
@@ -120,11 +128,11 @@ Next is deleting entries. Let's insert a third catfish to demonstrate. ::
 Rascal's owner just dropped him off for a visit and is back to pick him up, so
 it's time to delete Rascal from the table::
 
-  >> touch_pool.delete().where(fish_name='Rascal').execute()
+  >> touch_pool.delete().where(fish_name='Rascal').execute(commit=True)
 
 If you check the rows, you'll see Rascal's no longer there. ::
 
-  >>> touch_pool.select().execute()
+  >>> touch_pool.select().execute(commit=True)
   >>> for fish in touch_pool:
   ...     print fish
   ...

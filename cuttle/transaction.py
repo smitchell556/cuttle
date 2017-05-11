@@ -18,7 +18,7 @@ class Transaction(object):
 
     def __init__(self, connection):
         self._connection = connection
-        self._cursor = self._connection.cursor()
+        self._cur = None
 
     def __enter__(self):
         return self
@@ -31,18 +31,16 @@ class Transaction(object):
 
         self._close()
 
+    @property
+    def _cursor(self):
+        if self._cur is None or self._cur.connection is None:
+            self._cur = self._connection.cursor()
+        return self._cur
+
     def _close(self):
         """Closes the connection to the database."""
         self._connection.close()
         self._connection = None
-
-    def _execute(self, query, values):
-        """Executes the SQL statement."""
-        self._cursor.execute(query, values)
-
-    def _executemany(self, query, values):
-        """Executes the SQL statement."""
-        self._cursor.executemany(query, values)
 
     def commit(self):
         """Commits the transaction."""

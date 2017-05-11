@@ -137,7 +137,7 @@ class ModelInsertTestCase(ModelStatementsTestCase):
     def test_insert(self):
         with self.testtable1() as heros:
             hero = 'Yajirobe'
-            heros.insert(['hero_name'], [hero]).execute()
+            heros.insert(['hero_name'], [hero]).execute(commit=True)
 
             self.cur.execute('SELECT hero_name FROM {}'.format(heros.name))
             self.con.commit()
@@ -148,7 +148,8 @@ class ModelInsertTestCase(ModelStatementsTestCase):
         with self.testtable1() as heros:
             hero1 = 'Yajirobe'
             hero2 = 'Master Roshi'
-            heros.insert(['hero_name'], [[hero1], [hero2]]).executemany()
+            heros.insert(['hero_name'], [[hero1], [hero2]])\
+                 .executemany(commit=True)
 
             self.cur.execute('SELECT hero_name FROM {}'.format(heros.name))
             self.con.commit()
@@ -167,7 +168,7 @@ class ModelUpdateTestCase(ModelStatementsTestCase):
     def test_update(self):
         with self.testtable1() as heros:
             hero = 'Gohan'
-            heros.update(hero_name=hero).execute()
+            heros.update(hero_name=hero).execute(commit=True)
 
             self.cur.execute('SELECT hero_name FROM {}'.format(heros.name))
             self.con.commit()
@@ -190,7 +191,7 @@ class ModelDeleteTestCase(ModelStatementsTestCase):
 
     def test_delete(self):
         with self.testtable1() as heros:
-            heros.delete().execute()
+            heros.delete().execute(commit=True)
 
             self.cur.execute('SELECT hero_name FROM {}'.format(heros.name))
             self.con.commit()
