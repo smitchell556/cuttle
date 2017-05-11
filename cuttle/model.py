@@ -36,6 +36,8 @@ class Model(object):
     ``Model`` represents a table. It is used for querying the database. It is
     meant to be subclassed to create tables.
 
+    :param obj transaction: A ``Transaction`` object which will bundle all
+                            executed SQL statements into one transaction.
     :param bool validate_columns: Requires a validation check on all query
                                   methods that pass columns as parameters.
                                   If raise_error_on_validation is false, no
@@ -51,7 +53,7 @@ class Model(object):
     :raises TypeError: Error caused by instantiating Model.
     """
 
-    def __init__(self, validate_columns=True, raise_error_on_validation=True):
+    def __init__(self, transaction=None, validate_columns=True, raise_error_on_validation=True):
         #: Holds the connection to the database.
         self._connection = None
         #: Holds a cursor to the database.
@@ -60,6 +62,8 @@ class Model(object):
         self._query = []
         #: Holds values to be inserted into query when executed.
         self._values = []
+
+        self._transaction = transaction
         self.validate_columns = validate_columns
         self.raise_error_on_validation = raise_error_on_validation
 
@@ -302,7 +306,11 @@ class Model(object):
 
     def execute(self, dict_cursor=False, unbuffered_cursor=False, commit=True):
         """
-        Executes the query and returns the results (if any).
+        Executes the query and returns the results (if any). If a
+        ``Transaction`` object was passed to the ``Model`` on instantiation,
+        the parameters accepted on the ``execute()`` method will be ignored
+        since all statements will be executed by the underlying ``Transaction``
+        object.
 
         :param bool dict_cursor: If true, results will be in a dict instead of
                                  a tuple. Defaults to ``False``.
@@ -317,6 +325,9 @@ class Model(object):
                An unbuffered cursor will be used, and the results returned will
                be formatted as dictionaries.
         """
+        if self._transaction:
+            return self._transaction._execute(self.query, self.values)
+
         if dict_cursor and unbuffered_cursor:
             self.connection.cursorclass = SSDictCursor
         elif unbuffered_cursor:
@@ -338,6 +349,10 @@ class Model(object):
     def executemany(self, dict_cursor=False, unbuffered_cursor=False, commit=True):
         """
         Executes the query with multiple values and returns the results (if any).
+        If a ``Transaction`` object was passed to the ``Model`` on
+        instantiation, the parameters accepted on the ``executemany()`` method
+        will be ignored since all statements will be executed by the
+        underlying ``Transaction`` object.
 
         :param bool dict_cursor: If true, results will be in a dict instead of
                                  a tuple. Defaults to ``False``.
@@ -352,6 +367,9 @@ class Model(object):
                An unbuffered cursor will be used, and the results returned will
                be formatted as dictionaries.
         """
+        if self._transaction:
+            return self._transaction._executemany(self.query, self.seq_of_values)
+
         if dict_cursor and unbuffered_cursor:
             self.connection.cursorclass = SSDictCursor
         elif unbuffered_cursor:

@@ -155,4 +155,54 @@ automatically close the connection on exit. Just instantiate an object in a
 
 It's recommended to use the context manager to handle closing connections.
 
+Combining Transactions
+----------------------
+
+At some point, you may find yourself interacting with multiple tables at once.
+The problem with executing statements on multiple ``Model`` objects is that
+each object has it's own connection to the database, resulting in multiple
+transactions. If something goes wrong and you want to roll back all the
+statements from each object, it has to be done on each object seperately.
+It can be even hairier if some of those transactions have already been
+committed.
+
+To get around this, ``Cuttle`` has a ``Transaction`` object that can be passed
+to a ``Model`` on instantiation. Every executed statement made on a ``Model``
+holding a ``Transaction`` object will be executed by the ``Transaction`` object
+instead and those statements can be committed as one transaction or rolled back
+together.
+
+A very simple example using our ``TouchPool``::
+
+  >>> t = db.transaction()
+  >>> touch_pool1 = TouchPool(t)
+  >>> touch_pool2 = TouchPool(t)
+  >>> # execute statements with the TouchPool objects as you normally would
+  >>> t.commit()  # or t.rollback() if the statements shouldn't be committed
+  >>> t.end()
+
+The transaction is made and passed to both ``TouchPool`` objects and the
+``TouchPool`` objects can be used as normal. All statements executed by each
+``TouchPool`` object will go through the underlying ``Transaction`` object so
+they'll all be bundled together. Although the ``Transaction`` object was only
+passed to differenct instances of ``TouchPool``, it can be passed to every
+subclass of ``Model`` and isn't restricted to a single subclass at any given
+time.
+
+``Transaction`` objects can also be used in a ``with`` statement. ::
+
+  >>> with db.transaction() as t:
+  ...     # use t as you would above
+  ...     # there's no need to call t.commit() or t.end()
+
+Using the context manager approach will automatically commit the transaction
+when execution leaves the ``with`` block, or the transaction will be rolled
+back if an exception is raised. The ``end()`` method will also be called
+effectively killing the transaction.
+
+.. note::
+   Once ``end()`` is called, the ``Transaction`` object becomes useless. It no
+   longer contains a connection to the database, so any attempts to execute
+   statements will fail.
+  
 You've got the basics down, now check out :doc:`extend_model`

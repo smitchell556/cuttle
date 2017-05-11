@@ -248,6 +248,90 @@ class ModelWhereTestCase(ModelStatementsTestCase):
                 heros.where(comparison='wrong', hero_id=1)
 
 
+class ModelTransactionTestCase(ModelTestCase):
+
+    def setUp(self):
+        super(ModelTransactionTestCase, self).setUp()
+
+        self.con = self.pool.get_connection()
+        self.cur = self.con.cursor()
+
+    def test_explicit_commit(self):
+        t = self.db.transaction()
+
+        hero1 = 'Yajirobe'
+        hero2 = 'Master Roshi'
+
+        heros1 = self.testtable1(t)
+        heros2 = self.testtable1(t)
+
+        heros1.insert(['hero_name'], [hero1]).execute()
+        heros2.insert(['hero_name'], [hero2]).execute()
+
+        self.cur.execute('SELECT hero_name FROM {}'.format(heros1.name))
+        self.con.commit()
+        rv = self.cur.fetchall()
+
+        self.assertNotIn((hero1,), rv)
+        self.assertNotIn((hero2,), rv)
+
+        t.commit()
+
+        self.cur.execute('SELECT hero_name FROM {}'.format(heros1.name))
+        self.con.commit()
+        rv = self.cur.fetchall()
+
+        self.assertIn((hero1,), rv)
+        self.assertIn((hero2,), rv)
+
+    def test_explicit_rollback(self):
+        t = self.db.transaction()
+
+        hero1 = 'Yajirobe'
+        hero2 = 'Master Roshi'
+
+        heros1 = self.testtable1(t)
+        heros2 = self.testtable1(t)
+
+        heros1.insert(['hero_name'], [hero1]).execute()
+        heros2.insert(['hero_name'], [hero2]).execute()
+
+        t.rollback()
+
+        self.cur.execute('SELECT hero_name FROM {}'.format(heros1.name))
+        self.con.commit()
+        rv = self.cur.fetchall()
+
+        self.assertNotIn((hero1,), rv)
+        self.assertNotIn((hero2,), rv)
+
+    def test_contextmanager_commit(self):
+
+        hero1 = 'Yajirobe'
+        hero2 = 'Master Roshi'
+
+        with self.db.transaction() as t:
+            heros1 = self.testtable1(t)
+            heros2 = self.testtable1(t)
+
+            heros1.insert(['hero_name'], [hero1]).execute()
+            heros2.insert(['hero_name'], [hero2]).execute()
+
+            self.cur.execute('SELECT hero_name FROM {}'.format(heros1.name))
+            self.con.commit()
+            rv = self.cur.fetchall()
+
+            self.assertNotIn((hero1,), rv)
+            self.assertNotIn((hero2,), rv)
+
+        self.cur.execute('SELECT hero_name FROM {}'.format(heros1.name))
+        self.con.commit()
+        rv = self.cur.fetchall()
+
+        self.assertIn((hero1,), rv)
+        self.assertIn((hero2,), rv)
+
+
 class ModelLowercaseColumnsTestCase(unittest.TestCase):
 
     def test_columns_lower_arg(self):

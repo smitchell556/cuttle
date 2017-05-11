@@ -9,6 +9,9 @@ Version 0.7.0
 
 Minor release, unreleased
 
+- Created ``Transaction`` class which is used to bundle multiple executed
+  statements into one transaction.
+
 Version 0.6.0
 -------------
 

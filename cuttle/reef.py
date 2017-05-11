@@ -7,6 +7,7 @@ with Cuttle.
 """
 from cuttle.columns import Column
 from cuttle.model import CuttlePool, Model
+from cuttle.transaction import Transaction
 
 
 class Cuttle(object):
@@ -37,6 +38,8 @@ class Cuttle(object):
 
         self.Model = type(kwargs['db'], (Model,), {})
         self.Model.configure(sql_type, **kwargs)
+
+        self._Transaction = Transaction
 
     @property
     def name(self):
@@ -87,11 +90,13 @@ class Cuttle(object):
         self._create_tables()
 
     def drop_db(self):
-        """
-        Drops the database.
-        """
+        """Drops the database."""
         with self.Model() as model:
             drop_db = 'DROP DATABASE IF EXISTS {}'.format(self.name)
 
             model.append_query(drop_db)
             model.execute()
+
+    def transaction(self):
+        """Returns a ``Transaction`` object."""
+        return self._Transaction(self.Model._pool.get_connection())
