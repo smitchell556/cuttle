@@ -147,7 +147,7 @@ class Model(object):
         return [tuple(v) for v in self._values]
 
     @classmethod
-    def configure(cls, sql_type, **kwargs):
+    def _configure(cls, sql_type, **kwargs):
         """
         Configures the Model class to connect to the database.
 
@@ -159,10 +159,23 @@ class Model(object):
         """
         cls._sql_type = sql_type.lower()
         if cls._sql_type == 'mysql':
-            cls._pool = CuttlePool(**kwargs)
+            from pymysql import connect
+
+            # add ping method to pool
+            class Pool(CuttlePool):
+
+                def ping(self, connection):
+                    try:
+                        connection.ping()
+                    except Exception:
+                        pass
+                    return connection.open
+
         else:
             msg = "Please choose a valid sql extension"
             raise ValueError(msg)
+
+        cls._pool = Pool(connect, **kwargs)
 
     def _create_table(self):
         """

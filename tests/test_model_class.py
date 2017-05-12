@@ -92,20 +92,6 @@ class ModelQueryValuesTestCase(unittest.TestCase):
                              [tuple(v) for v in seq_of_values])
 
 
-class ModelConfigure(ModelTestCase):
-
-    def test_proper_sql_type(self):
-        sqls = ['mysql']
-        for sql in sqls:
-            Model.configure(sql)
-            self.assertEqual(Model._sql_type, sql)
-            self.assertIsInstance(Model._pool, self.Pool)
-
-    def test_improper_sql_type(self):
-        with self.assertRaises(ValueError):
-            Model.configure('wrong')
-
-
 class ModelSelectTestCase(ModelStatementsTestCase):
 
     def test_select_all(self):

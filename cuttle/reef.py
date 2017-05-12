@@ -37,7 +37,7 @@ class Cuttle(object):
         self._name = kwargs['db']
 
         self.Model = type(kwargs['db'], (Model,), {})
-        self.Model.configure(sql_type, **kwargs)
+        self.Model._configure(sql_type, **kwargs)
 
         self._Transaction = Transaction
 
