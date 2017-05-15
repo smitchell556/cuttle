@@ -5,11 +5,11 @@ Tests related to the Cuttle class.
 import os
 import unittest
 import warnings
+import time
 
 from cuttle.reef import Cuttle, Column
 from cuttlepool import CuttlePool
 from cuttlepool.cuttlepool import PoolConnection
-from pymysql.cursors import Cursor
 
 
 DB = '_cuttle_test_db'
@@ -22,14 +22,17 @@ class BaseDbTestCase(unittest.TestCase):
     def setUp(self):
         self.Pool = CuttlePool
         self.Connection = PoolConnection
-        self.Cursor = Cursor
 
         self.credentials = dict(host=HOST)
 
-        self.sql_type = os.environ['CUTTLE_SQL'].lower()
+        self.sql_type = os.environ['TEST_CUTTLE'].lower()
 
         if self.sql_type == 'mysql':
+            import pymysql
             from mysql_credentials import USER, PASSWD
+
+            self.Cursor = pymysql.cursors.Cursor
+            self.connect = pymysql.connect
 
             self.credentials.update(dict(user=USER, passwd=PASSWD))
 
@@ -51,11 +54,11 @@ class BaseDbTestCase(unittest.TestCase):
                              ('hero_name', 'varchar(16)', 'YES', '', None, ''))
 
     def tearDown(self):
-        warnings.filterwarnings('ignore')
+        # warnings.filterwarnings('ignore')
         self.db.drop_db()
 
     def createPool(self, **kwargs):
-        return CuttlePool(**kwargs)
+        return CuttlePool(self.connect, **kwargs)
 
 
 class DbNestedModelTestCase(BaseDbTestCase):
@@ -91,9 +94,7 @@ class TwoDbTestCase(BaseDbTestCase):
     def tearDown(self):
         super(TwoDbTestCase, self).tearDown()
 
-        with self.db2.Model() as drop_db:
-            drop_db.append_query('DROP DATABASE IF EXISTS {}'.format(DB2))
-            drop_db.execute()
+        self.db2.drop_db()
 
 
 class CuttleInstanceTestCase(unittest.TestCase):

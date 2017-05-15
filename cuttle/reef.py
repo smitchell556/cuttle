@@ -73,10 +73,11 @@ class Cuttle(object):
 
         connection_arguments = self.Model().connection_arguments
         connection_arguments.pop('db')
+        connect = self.Model._pool._connect
 
         db_stmnt = 'CREATE DATABASE {}'.format(self.name)
 
-        tmp_pool = CuttlePool(**connection_arguments)
+        tmp_pool = CuttlePool(connect, **connection_arguments)
 
         con = tmp_pool.get_connection()
         cur = con.cursor()

@@ -17,7 +17,7 @@ class ModelTestCase(BaseDbTestCase):
         super(ModelTestCase, self).setUp()
         self.db.create_db()
 
-        self.pool = self.Pool(db=DB, **self.credentials)
+        self.pool = self.Pool(self.connect, db=DB, **self.credentials)
 
 
 class ModelStatementsTestCase(ModelTestCase):

@@ -159,10 +159,14 @@ class Model(object):
         """
         cls._sql_type = sql_type.lower()
         if cls._sql_type == 'mysql':
-            from pymysql import connect
+            import pymysql
+            connect = pymysql.connect
 
             # add ping method to pool
             class Pool(CuttlePool):
+
+                def normalize_connection(self, connection):
+                    connection.cursorclass = pymysql.cursors.Cursor
 
                 def ping(self, connection):
                     try:
