@@ -7,7 +7,7 @@ Here are the changes made to Cuttle for each release.
 Version 0.8.0
 -------------
 
-Minor release,unreleased
+Minor release, unreleased
 
 - Updated to work with newer version of Cuttle Pool.
 
