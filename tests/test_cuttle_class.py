@@ -54,10 +54,11 @@ class BaseDbTestCase(unittest.TestCase):
                              ('hero_name', 'varchar(16)', 'YES', '', None, ''))
 
     def tearDown(self):
-        # warnings.filterwarnings('ignore')
+        warnings.filterwarnings('ignore')
         self.db.drop_db()
 
     def createPool(self, **kwargs):
+        warnings.filterwarnings('ignore')
         return CuttlePool(self.connect, **kwargs)
 
 
