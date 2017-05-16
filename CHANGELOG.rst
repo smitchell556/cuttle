@@ -9,6 +9,8 @@ Version 0.8.0
 
 Minor release,unreleased
 
+- Updated to work with newer version of Cuttle Pool.
+
 Version 0.7.1
 -------------
 

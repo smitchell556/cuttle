@@ -4,10 +4,10 @@ Cuttle
 The simple, extendable ORM
 **************************
 
-Cuttle is a small ORM that allows developers to create custom queries. It does
-not aim to do everything, but instead abstracts away much of the basic steps
-involved in database interactions. Read the docs at
-https://cuttle.readthedocs.io.
+Cuttle is a small, open source ORM that allows developers to create custom
+queries. It does not aim to do everything, but instead abstracts away much of
+the basic steps involved in database interactions. Read the docs at
+https://cuttle.readthedocs.io. Cuttle is licensed under the MIT license.
 
 Why is it called Cuttle?
 ------------------------
@@ -91,21 +91,20 @@ Install the package in editable mode::
 
 Now you're set. See the next section for running tests.
 
-Please work off the ``develop`` branch. Better yet, create a new branch from
-``develop`` and merge it back into ``develop`` when functional and passing
-tests.
-
 Running the tests
 -----------------
 
 To run the tests, tox will need to be installed with ``pip install tox``.
 
-First set the environment variable ``CUTTLE_SQL`` to the implementation you
-want to test. For example ``export CUTTLE_SQL="mysql"`` will ensure the tests
+First set the environment variable ``TEST_CUTTLE`` to the implementation you
+want to test. For example ``export TEST_CUTTLE="mysql"`` will ensure the tests
 are run using MySQL. Tests can be run using tox with the command ``tox``. If
 the tests require user credentials, create a file ``<sql>_credentials.py`` with
 the appropriate variables in the test directory, where ``<sql>`` is the specific
 implementation desired for testing.
+
+.. TODO:
+   Include what credentials are needed to run tests using mysql.
 
 Where can I get help?
 ---------------------
