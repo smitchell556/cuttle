@@ -7,7 +7,7 @@ Here are the changes made to Cuttle for each release.
 Version 0.8.0
 -------------
 
-Minor release, unreleased
+Minor release, 16, May 2017
 
 - Updated to work with newer version of Cuttle Pool.
 
